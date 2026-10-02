@@ -53,9 +53,9 @@ The four types and their meanings (also shown to the agent in the Memory Managem
 
 ## How the agent reads it
 
-`buildMemoryContext()` in [`server/agent/prompt.ts`](../server/agent/prompt.ts) injects the current memory directly into the system prompt under a `## Memory` section, wrapped in a `<reference type="memory">` envelope so a poisoned entry can't impersonate instructions. The full body of every topic file lands inline; the agent doesn't have to round-trip a tool call to read memory.
+`buildMemoryContext()` in [`server/agent/prompt.ts`](../server/agent/prompt.ts) injects the current memory directly into the system prompt under a `## Memory` section, wrapped in a `<reference type="memory">` envelope so a poisoned entry can't impersonate instructions. Each topic file contributes one index line — `<type>/<topic>.md` and its H2 sections — not its body (#1432); the agent `Read`s a topic file when a line looks relevant. Only the topic files are read: in topic format the legacy `conversations/memory.md` never reaches the prompt.
 
-`MEMORY.md` is the index, not the source of truth — its line per topic file is `- [name](slug.md) — description` and the H2 headings the file contains. The agent reads the index for shape, then reads bullet bodies inline.
+`MEMORY.md` is the on-disk index, not the source of truth — one line per topic file, `- <type>/<topic>.md — <H2 sections>`. The prompt builds its index lines from the topic files themselves, so a stale `MEMORY.md` never hides a bullet.
 
 Detection between the legacy "atomic" layout and the current "topic" layout is done at request time in [`topic-detect.ts`](../server/workspace/memory/topic-detect.ts): if any of the canonical type subdirectories (`preference/` / `interest/` / `fact/` / `reference/`) exists under `memory/`, topic format wins. No module-level cache — a manual swap takes effect on the next request.
 
@@ -69,6 +69,15 @@ When the conversation produces something durable enough to remember, the agent w
 4. If the bullet introduces a new H2 the user will see in the index, also `Write` a matching `MEMORY.md` line. Otherwise the index regenerates on the next clustering pass.
 
 What NOT to write: ephemeral task state, sensitive material (credentials, SSH keys), duplicates, or anything the user asked the agent to forget.
+
+## Facts the journal extracts
+
+At the end of each journal daily pass, [`memoryExtractor.ts`](../server/workspace/journal/memoryExtractor.ts) asks an LLM for durable user facts the agent did not save in-conversation. Where they go follows the layout the prompt reads:
+
+- **Topic format** — the LLM tags each fact `[<type>/<topic>]`, reusing an existing topic when one fits, and [`topic-append.ts`](../server/workspace/memory/topic-append.ts) files it under the H1 of that topic file (ahead of the first H2, so it never lands in an unrelated section) or into a new topic file, then rebuilds `MEMORY.md`. A fact without a usable tag goes to `fact/general.md` rather than being dropped.
+- **Older layouts** — facts are appended to `conversations/memory.md`, which their prompt still reads.
+
+Builds before this was fixed appended to `memory.md` in topic format too, where the prompt never reads it. The next daily pass files those stranded bullets into topic files as well and renames the file to `memory.md.filed-<timestamp>`; nothing is deleted.
 
 ## The atomic → topic migration
 

@@ -36,6 +36,12 @@ export function extractH2Sections(body: string): string[] {
   return sections;
 }
 
+/** Index of the first H2 heading in `lines` (a body split on "\n"), or
+ *  -1 when there is none. Same H2 rule as `extractH2Sections`. */
+export function firstH2LineIndex(lines: readonly string[]): number {
+  return lines.findIndex((line) => isH2Line(stripCarriageReturn(line)));
+}
+
 function isH2Line(line: string): boolean {
   if (!line.startsWith("##")) return false;
   if (line.startsWith("###")) return false;

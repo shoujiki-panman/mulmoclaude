@@ -97,6 +97,13 @@ function chainRegen(workspaceRoot: string): Promise<unknown> {
   return next;
 }
 
+/** Rebuild `MEMORY.md` behind any rebuild already queued for this
+ *  workspace. For server-side writers that bypass `publishFileChange`
+ *  (the journal's daily memory extraction). */
+export function queueTopicIndexRegen(workspaceRoot: string): Promise<unknown> {
+  return chainRegen(workspaceRoot);
+}
+
 // Fire-and-forget index regeneration for a workspace-relative path.
 // Returns `true` when a regen actually ran — callers (specifically
 // `publishFileChange`) use this to decide whether to emit a follow-up
