@@ -14,7 +14,8 @@ import { Router, Request, Response } from "express";
 import { extname } from "path";
 import { saveAttachment, saveCompanion, stripDataUri, type SavedAttachment } from "../../utils/files/attachment-store.js";
 import { convertPptxToPdf } from "../../agent/attachmentConverter.js";
-import { CLAUDE_UNSUPPORTED_IMAGE_MIMES, sharpConvertToJpeg, type ConvertToJpeg } from "../../utils/files/image-jpeg-convert.js";
+import { CLAUDE_UNSUPPORTED_IMAGE_MIMES } from "../../utils/files/image-jpeg-convert.js";
+import { addJpegCompanionIfNeeded } from "../../utils/files/attachment-jpeg-companion.js";
 import { errorMessage } from "../../utils/errors.js";
 import { badRequest, serverError } from "../../utils/httpError.js";
 import { API_ROUTES } from "../../../src/config/apiRoutes.js";
@@ -23,21 +24,6 @@ import { log } from "../../system/logger/index.js";
 const router = Router();
 
 const PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-
-// Injected converter for the HEIC / TIFF / BMP / AVIF → JPEG branch.
-// Production wiring uses `sharpConvertToJpeg`; tests replace it via
-// `setImageJpegConverterForTests` so they don't need the native
-// binary. Kept as a module-level `let` so the swap is process-wide
-// and doesn't require plumbing a param through the express handler.
-let imageJpegConverter: ConvertToJpeg = sharpConvertToJpeg;
-
-/** Test-only: swap in a stub converter and return the previous one so
- *  the caller can restore it. Production code never calls this. */
-export function setImageJpegConverterForTests(converter: ConvertToJpeg): ConvertToJpeg {
-  const previous = imageJpegConverter;
-  imageJpegConverter = converter;
-  return previous;
-}
 
 interface UploadAttachmentBody {
   /** `data:<mime>;base64,...` from FileReader.readAsDataURL. */
@@ -88,33 +74,23 @@ async function respondWithPptxCompanion(res: UploadResponse, original: SavedAtta
 }
 
 // HEIC / HEIF / TIFF / BMP / AVIF — Claude API rejects these as
-// `image.source.media_type`, so convert to JPEG at upload and hand
-// the LLM the companion. The original still lives on disk (archival)
-// and the EXIF sidecar hook has already run against it in
-// `saveAttachment` — GPS / orientation are preserved independently of
-// the JPEG. On sharp / libheif failure we log a warn and return the
-// original path so the upload isn't lost; the caller then hits the
-// same 400 it would have before this branch existed.
-async function respondWithJpegCompanion(res: UploadResponse, original: SavedAttachment, base64: string, sourceMime: string): Promise<void> {
-  let jpegBuf: Buffer;
-  try {
-    jpegBuf = await imageJpegConverter(Buffer.from(base64, "base64"), sourceMime);
-  } catch (convertErr) {
-    log.warn("attachments", "upload: image-to-jpeg conversion failed, returning original", {
-      path: original.relativePath,
-      sourceMime,
-      error: errorMessage(convertErr),
+// `image.source.media_type`, so `addJpegCompanionIfNeeded` writes a
+// JPEG companion and the LLM is handed that. The original still lives
+// on disk (archival) and the EXIF sidecar hook has already run against
+// it in `saveAttachment` — GPS / orientation are preserved independently
+// of the JPEG. A failed conversion leaves `path` on the original so the
+// upload isn't lost; the caller then hits the same 400 it would have
+// before this branch existed.
+async function respondWithJpegCompanion(res: UploadResponse, original: SavedAttachment, base64: string): Promise<void> {
+  const forClaude = await addJpegCompanionIfNeeded(original, base64);
+  if (forClaude.relativePath !== original.relativePath) {
+    log.info("attachments", "upload: ok", {
+      path: forClaude.relativePath,
+      originalPath: original.relativePath,
+      conversion: `${original.mimeType}-to-jpeg`,
     });
-    res.json({ path: original.relativePath, originalPath: original.relativePath, mimeType: original.mimeType });
-    return;
   }
-  const jpegPath = await saveCompanion(original.relativePath, jpegBuf, ".jpg");
-  log.info("attachments", "upload: ok", {
-    path: jpegPath,
-    originalPath: original.relativePath,
-    conversion: `${sourceMime}-to-jpeg`,
-  });
-  res.json({ path: jpegPath, originalPath: original.relativePath, mimeType: "image/jpeg" });
+  res.json({ path: forClaude.relativePath, originalPath: original.relativePath, mimeType: forClaude.mimeType });
 }
 
 async function handleUploadAttachment(req: Request<object, unknown, UploadAttachmentBody>, res: UploadResponse): Promise<void> {
@@ -140,7 +116,7 @@ async function handleUploadAttachment(req: Request<object, unknown, UploadAttach
       return;
     }
     if (CLAUDE_UNSUPPORTED_IMAGE_MIMES.has(parsed.mimeType)) {
-      await respondWithJpegCompanion(res, original, parsed.base64, parsed.mimeType);
+      await respondWithJpegCompanion(res, original, parsed.base64);
       return;
     }
     log.info("attachments", "upload: ok", {

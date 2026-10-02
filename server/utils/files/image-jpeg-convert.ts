@@ -2,10 +2,10 @@
 // refuses (HEIC / HEIF / TIFF / BMP / AVIF) into JPEG, so the
 // downstream `type: "image"` content block Claude expects a
 // `media_type` from a fixed allowlist can be filled without a 400.
-// See `server/api/routes/attachment.ts` for the wiring: original
-// bytes stay on disk as `<id>.<ext>`; the JPEG lands as a
-// `<id>.jpg` companion; the UI shows the original filename while
-// the LLM sees the JPEG.
+// See `attachment-jpeg-companion.ts` for the wiring every ingress
+// path shares: original bytes stay on disk as `<id>.<ext>`; the JPEG
+// lands as a `<id>.jpg` companion; the UI shows the original filename
+// while the LLM sees the JPEG.
 //
 // Two decoders are used depending on the source MIME:
 //   - HEIC / HEIF: `heic-convert` (bundles WASM libheif, so HEVC

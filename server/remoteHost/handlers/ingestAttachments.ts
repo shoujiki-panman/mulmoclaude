@@ -5,17 +5,18 @@
 // video, or PDF — to Firebase Storage at `users/{uid}/uploads/{storage_id}` and
 // sends only the `storage_id` on startChat. This module — signed in as the same
 // user — pulls each staged object, persists it into the workspace attachment
-// store via `saveAttachment` (so it lands in `data/attachments/YYYY/MM/`, gets a
-// correct mime, and is accepted by the same attachment pipeline Vue uploads
-// use), deletes the Storage object (staging only), and returns a path-only
-// `Attachment` per file for startChat to hand to the spawned chat.
+// store via `saveAttachmentForClaude` (so it lands in `data/attachments/YYYY/MM/`,
+// gets a correct mime, and an iPhone HEIC gains the same JPEG companion a Vue
+// upload gets — Claude 400s on `image/heic`), deletes the Storage object
+// (staging only), and returns a path-only `Attachment` per file for startChat
+// to hand to the spawned chat.
 //
 // Factory (createIngestAttachments) keeps the flow unit-testable with the
 // Storage + attachment-store deps stubbed; the default export wires the real ones.
 import { deleteObject, getBytes, getMetadata, ref } from "firebase/storage";
 import type { Attachment } from "@mulmobridge/protocol";
 
-import { saveAttachment } from "../../utils/files/attachment-store.js";
+import { saveAttachmentForClaude } from "../../utils/files/attachment-jpeg-companion.js";
 import { errorMessage } from "../../utils/errors.js";
 import { log } from "../../system/logger/index.js";
 import { currentStorage, currentUid } from "../session.js";
@@ -82,6 +83,6 @@ const fetchObject = async (storagePath: string): Promise<{ base64: string; conte
 export const ingestAttachments = createIngestAttachments({
   uid: currentUid,
   fetchObject,
-  saveAttachment,
+  saveAttachment: saveAttachmentForClaude,
   deleteObject: (storagePath) => deleteObject(ref(currentStorage(), storagePath)),
 });

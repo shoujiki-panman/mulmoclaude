@@ -60,7 +60,8 @@ import { env } from "../../system/env.js";
 import type { Attachment } from "@mulmobridge/protocol";
 import type { StartChatParams as ChatServiceStartChatParams } from "@mulmobridge/chat-service";
 import { isImagePath, loadImageBase64 } from "../../utils/files/image-store.js";
-import { isAttachmentPath, loadAttachmentBase64, inferMimeFromExtension, saveAttachment } from "../../utils/files/attachment-store.js";
+import { isAttachmentPath, loadAttachmentBase64, inferMimeFromExtension } from "../../utils/files/attachment-store.js";
+import { saveAttachmentForClaude } from "../../utils/files/attachment-jpeg-companion.js";
 
 const router = Router();
 const PORT = env.port;
@@ -463,6 +464,9 @@ function synthesiseBridgeAttachment(selectedImageData: string | undefined): Atta
  *       cases downstream).
  *    2. `prepareRequestExtras` becomes a path-only walk — the inline
  *       (`{ data, mimeType }`) shape no longer flows past this layer.
+ *    3. An image MIME Claude refuses (an iPhone's HEIC, TIFF, ...)
+ *       gets a JPEG companion and the entry points at the JPEG, the
+ *       same as a Vue upload — otherwise the turn 400s.
  *
  *  Defensive: `Array.isArray` mirrors the guard in
  *  `collectAttachedPaths` so a malformed payload doesn't throw and
@@ -476,7 +480,7 @@ function synthesiseBridgeAttachment(selectedImageData: string | undefined): Atta
  *  no orphan turn lands in jsonl. Entries with neither path nor
  *  inline bytes are still dropped (warn) — that's a malformed entry,
  *  not an I/O failure. */
-async function persistInlineBytesAsPaths(attachments: Attachment[] | undefined): Promise<Attachment[] | undefined> {
+export async function persistInlineBytesAsPaths(attachments: Attachment[] | undefined): Promise<Attachment[] | undefined> {
   if (!Array.isArray(attachments) || attachments.length === 0) return undefined;
   const result: Attachment[] = [];
   for (const att of attachments) {
@@ -485,7 +489,7 @@ async function persistInlineBytesAsPaths(attachments: Attachment[] | undefined):
       continue;
     }
     if (typeof att.data === "string" && att.data.length > 0 && typeof att.mimeType === "string" && att.mimeType.length > 0) {
-      const saved = await saveAttachment(att.data, att.mimeType);
+      const saved = await saveAttachmentForClaude(att.data, att.mimeType);
       // Carry `filename` across the rewrite. Bridges that know the
       // sender's filename already send it (Telegram documents pass
       // `doc.file_name`), and dropping it here is what kept the name

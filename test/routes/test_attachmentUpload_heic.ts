@@ -110,15 +110,19 @@ after(async () => {
   if (workspaceRoot) await rm(workspaceRoot, { recursive: true, force: true });
 });
 
+// The converter seam lives in the shared companion helper every ingress
+// path uses, not in the route.
+const loadCompanionModule = () => import("../../server/utils/files/attachment-jpeg-companion.ts");
+
 beforeEach(async () => {
   capturedHookCalls = [];
-  const routeMod = await import("../../server/api/routes/attachment.ts");
-  const previous = routeMod.setImageJpegConverterForTests(async () => STUB_JPEG_BYTES);
+  const companionMod = await loadCompanionModule();
+  const previous = companionMod.setImageJpegConverterForTests(async () => STUB_JPEG_BYTES);
   // The stub ignores sourceMime — the route just forwards whatever it
   // was called with. Individual assertions below sanity-check the
   // MIME plumbing separately when needed.
   restoreConverter = () => {
-    routeMod.setImageJpegConverterForTests(previous);
+    companionMod.setImageJpegConverterForTests(previous);
   };
 });
 
@@ -195,8 +199,8 @@ describe("POST /api/attachments — HEIC → JPEG conversion (#1996)", () => {
     // "corrupted HEIC" scenarios. The route must still succeed so the
     // upload isn't lost — the caller then hits the same 400 downstream
     // it would have hit without this branch.
-    const routeMod = await import("../../server/api/routes/attachment.ts");
-    const previous = routeMod.setImageJpegConverterForTests(async () => {
+    const companionMod = await loadCompanionModule();
+    const previous = companionMod.setImageJpegConverterForTests(async () => {
       throw new Error("libheif unavailable");
     });
     try {
@@ -208,7 +212,7 @@ describe("POST /api/attachments — HEIC → JPEG conversion (#1996)", () => {
       assert.equal(state.body?.path, state.body?.originalPath, "path === originalPath on fallback");
       assert.equal(state.body?.mimeType, "image/heic", "mimeType preserved on fallback");
     } finally {
-      routeMod.setImageJpegConverterForTests(previous);
+      companionMod.setImageJpegConverterForTests(previous);
     }
   });
 
@@ -217,9 +221,9 @@ describe("POST /api/attachments — HEIC → JPEG conversion (#1996)", () => {
     // based on the sourceMime arg. If the route forgets to pass it,
     // TIFF / BMP / AVIF would silently be handed to the HEIC decoder
     // (or vice-versa). Pin the plumbing here.
-    const routeMod = await import("../../server/api/routes/attachment.ts");
+    const companionMod = await loadCompanionModule();
     const seenMimes: string[] = [];
-    const previous = routeMod.setImageJpegConverterForTests(async (_input, sourceMime) => {
+    const previous = companionMod.setImageJpegConverterForTests(async (_input, sourceMime) => {
       seenMimes.push(sourceMime);
       return STUB_JPEG_BYTES;
     });
@@ -231,7 +235,7 @@ describe("POST /api/attachments — HEIC → JPEG conversion (#1996)", () => {
         assert.deepEqual(seenMimes, [mime], `converter received sourceMime=${mime}`);
       }
     } finally {
-      routeMod.setImageJpegConverterForTests(previous);
+      companionMod.setImageJpegConverterForTests(previous);
     }
   });
 
