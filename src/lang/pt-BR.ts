@@ -50,6 +50,17 @@ const ptBRMessages = {
       start: "Iniciar entrada de voz",
       stop: "Parar entrada de voz",
     },
+    camera: {
+      start: "Ligar a câmera (uma foto é anexada a cada mensagem enviada)",
+      stop: "Desligar a câmera",
+      unavailable: "Não foi possível iniciar a câmera. Verifique a permissão de câmera do navegador.",
+      attachHint: "Uma foto desta visualização é anexada ao enviar.",
+      previewLabel: "Pré-visualização da câmera",
+    },
+    readAloud: {
+      speaking: "Lendo a resposta em voz alta…",
+      stop: "Parar a leitura",
+    },
   },
   cspViolation: {
     notice:
@@ -370,6 +381,18 @@ const ptBRMessages = {
       retry: "Tentar novamente",
       loadError: "Falha ao carregar as configurações",
       saveError: "Falha ao salvar",
+      handsFree: {
+        heading: "Mãos livres",
+        description: "Para quando suas mãos estão ocupadas — por exemplo, seguir instruções enquanto solda. Salvo apenas neste dispositivo.",
+        autoSendLabel: "Enviar a entrada de voz automaticamente",
+        autoSendHint: "Quando você para de falar, a mensagem é enviada sem apertar Enviar. Digitar na caixa cancela o envio. Requer a entrada de voz (acima).",
+        readAloudLabel: "Ler as respostas em voz alta",
+        readAloudHint: "Usa a voz embutida do navegador. O microfone pausa enquanto uma resposta é lida.",
+        readAloudUnsupported: "Este navegador não consegue ler texto em voz alta.",
+        cameraLabel: "Mostrar um botão de câmera",
+        cameraHint: "Adiciona um botão de câmera à entrada do chat. Enquanto a câmera estiver ligada, uma foto é anexada a cada mensagem enviada.",
+        cameraUnsupported: "Para usar a câmera, o MulmoClaude precisa ser aberto em localhost ou via HTTPS.",
+      },
     },
     chatIndexTab: {
       description:

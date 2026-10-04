@@ -50,6 +50,17 @@ const deMessages = {
       start: "Spracheingabe starten",
       stop: "Spracheingabe stoppen",
     },
+    camera: {
+      start: "Kamera einschalten (an jede gesendete Nachricht wird ein Foto angehängt)",
+      stop: "Kamera ausschalten",
+      unavailable: "Die Kamera konnte nicht gestartet werden. Prüfen Sie die Kameraberechtigung im Browser.",
+      attachHint: "Beim Senden wird ein Foto dieser Ansicht angehängt.",
+      previewLabel: "Kameravorschau",
+    },
+    readAloud: {
+      speaking: "Antwort wird vorgelesen…",
+      stop: "Vorlesen beenden",
+    },
   },
   cspViolation: {
     notice:
@@ -376,6 +387,19 @@ const deMessages = {
       retry: "Erneut versuchen",
       loadError: "Einstellungen konnten nicht geladen werden",
       saveError: "Speichern fehlgeschlagen",
+      handsFree: {
+        heading: "Freihändig",
+        description: "Für Arbeiten, bei denen die Hände beschäftigt sind – etwa Anweisungen folgen, während Sie löten. Wird nur auf diesem Gerät gespeichert.",
+        autoSendLabel: "Spracheingabe automatisch senden",
+        autoSendHint:
+          "Sobald Sie aufhören zu sprechen, wird die Nachricht ohne Klick auf Senden verschickt. Tippen im Eingabefeld bricht das ab. Erfordert die Spracheingabe (oben).",
+        readAloudLabel: "Antworten vorlesen",
+        readAloudHint: "Nutzt die eingebaute Stimme des Browsers. Das Mikrofon pausiert, während eine Antwort vorgelesen wird.",
+        readAloudUnsupported: "Dieser Browser kann keinen Text vorlesen.",
+        cameraLabel: "Kamera-Schaltfläche anzeigen",
+        cameraHint: "Fügt dem Chat-Eingabefeld eine Kamera-Schaltfläche hinzu. Solange die Kamera an ist, wird an jede gesendete Nachricht ein Foto angehängt.",
+        cameraUnsupported: "Für die Kamera muss MulmoClaude über localhost oder HTTPS geöffnet sein.",
+      },
     },
     chatIndexTab: {
       description:

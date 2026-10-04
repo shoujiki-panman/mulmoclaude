@@ -50,6 +50,17 @@ const frMessages = {
       start: "Démarrer la saisie vocale",
       stop: "Arrêter la saisie vocale",
     },
+    camera: {
+      start: "Activer la caméra (une photo est jointe à chaque message envoyé)",
+      stop: "Désactiver la caméra",
+      unavailable: "Impossible de démarrer la caméra. Vérifiez l'autorisation de la caméra dans le navigateur.",
+      attachHint: "Une photo de cette vue est jointe à l'envoi.",
+      previewLabel: "Aperçu de la caméra",
+    },
+    readAloud: {
+      speaking: "Lecture de la réponse à voix haute…",
+      stop: "Arrêter la lecture",
+    },
   },
   cspViolation: {
     notice:
@@ -372,6 +383,19 @@ const frMessages = {
       retry: "Réessayer",
       loadError: "Échec du chargement des paramètres",
       saveError: "Échec de l'enregistrement",
+      handsFree: {
+        heading: "Mains libres",
+        description: "Pour quand vous avez les mains occupées — par exemple, suivre des instructions tout en soudant. Enregistré sur cet appareil uniquement.",
+        autoSendLabel: "Envoyer la saisie vocale automatiquement",
+        autoSendHint:
+          "Quand vous arrêtez de parler, le message est envoyé sans appuyer sur Envoyer. Taper dans la zone de saisie l'annule. Nécessite la saisie vocale (ci-dessus).",
+        readAloudLabel: "Lire les réponses à voix haute",
+        readAloudHint: "Utilise la voix intégrée du navigateur. Le micro est mis en pause pendant la lecture d'une réponse.",
+        readAloudUnsupported: "Ce navigateur ne peut pas lire de texte à voix haute.",
+        cameraLabel: "Afficher un bouton caméra",
+        cameraHint: "Ajoute un bouton caméra à la zone de saisie. Tant que la caméra est active, une photo est jointe à chaque message envoyé.",
+        cameraUnsupported: "Pour utiliser la caméra, MulmoClaude doit être ouvert sur localhost ou en HTTPS.",
+      },
     },
     chatIndexTab: {
       description:

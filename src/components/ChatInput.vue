@@ -60,6 +60,35 @@
           </button>
         </div>
       </div>
+      <!-- Hands-free: a reply is being read aloud. The mic stays paused
+           until it ends (so it can't transcribe the reply back as the
+           user's turn); Stop ends it early. -->
+      <div
+        v-if="readAloudSpeaking"
+        class="flex items-center gap-1.5 mb-1 bg-amber-50 border border-amber-200 rounded px-2 py-1 text-xs text-gray-700"
+        data-testid="read-aloud-indicator"
+      >
+        <span class="material-icons text-sm leading-none text-amber-500">volume_up</span>
+        <span class="flex-1 truncate">{{ t("chatInput.readAloud.speaking") }}</span>
+        <button
+          type="button"
+          class="text-gray-500 hover:text-red-600 shrink-0 flex items-center"
+          :title="t('chatInput.readAloud.stop')"
+          :aria-label="t('chatInput.readAloud.stop')"
+          data-testid="read-aloud-stop-btn"
+          @click="cancelReadAloud"
+        >
+          <span class="material-icons text-sm leading-none">stop</span>
+        </button>
+      </div>
+      <div v-if="cameraError" class="mb-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-3 py-1.5" data-testid="camera-error">
+        {{ cameraError }}
+      </div>
+      <!-- Hands-free camera: what the next send will attach a snapshot of. -->
+      <div v-if="cameraStream" class="flex items-end gap-2 mb-1" data-testid="camera-preview-row">
+        <CameraPreview ref="cameraPreview" :stream="cameraStream" />
+        <span class="text-xs text-gray-500">{{ t("chatInput.camera.attachHint") }}</span>
+      </div>
       <div class="flex gap-2" :class="{ 'mt-2': pastedFiles.length > 0 }">
         <textarea
           ref="textarea"
@@ -103,7 +132,7 @@
             class="bg-blue-600 hover:bg-blue-700 text-white rounded w-8 h-8 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             :title="t('chatInput.send')"
             :aria-label="t('chatInput.send')"
-            @click="emit('send')"
+            @click="requestSend"
           >
             <span class="material-icons text-base leading-none">send</span>
           </button>
@@ -119,10 +148,11 @@
           <!-- Toggle mic. Hidden unless the backend reports voice input
                ready (Mac + enabled + model downloaded). Click to arm
                voice input for the session: it listens on the user's
-               turn, pauses while the agent runs, and auto-resumes each
-               turn until clicked off. Each pause finalizes a segment
-               that is transcribed and appended for review (never
-               auto-sent). -->
+               turn, pauses while the agent runs (or a reply is read
+               aloud), and auto-resumes each turn until clicked off.
+               Each pause finalizes a segment that is transcribed and
+               appended for review — sent for the user only when
+               hands-free auto-send is on in Settings → Voice. -->
           <button
             v-if="voiceAvailable"
             data-testid="mic-btn"
@@ -133,6 +163,22 @@
             @click="onMicClick"
           >
             <span class="material-icons text-base leading-none">{{ micButtonIcon }}</span>
+          </button>
+          <!-- Hands-free camera toggle. Shown only when the camera button
+               is enabled in Settings → Voice and the page may use a
+               camera (localhost or HTTPS). While on, every send attaches
+               a snapshot of the preview. -->
+          <button
+            v-if="cameraButtonVisible"
+            data-testid="camera-btn"
+            class="rounded w-8 h-8 flex items-center justify-center"
+            :class="cameraOn ? 'bg-red-600 text-white' : 'text-gray-400 hover:text-gray-600'"
+            :title="cameraButtonLabel"
+            :aria-label="cameraButtonLabel"
+            :aria-pressed="cameraOn"
+            @click="onCameraClick"
+          >
+            <span class="material-icons text-base leading-none">photo_camera</span>
           </button>
         </div>
       </div>
@@ -150,6 +196,12 @@
 import { computed, nextTick, onMounted, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useVoiceInput } from "../composables/useVoiceInput";
+import { useHandsFreePrefs } from "../composables/useHandsFreePrefs";
+import { useVoiceAutoSend } from "../composables/useVoiceAutoSend";
+import { useReplyReadAloud } from "../composables/useReplyReadAloud";
+import { isCameraSupported, useCameraSnapshot } from "../composables/useCameraSnapshot";
+import { isAutoSendReady } from "../utils/handsFree/autoSend";
+import CameraPreview from "./CameraPreview.vue";
 import ChatAttachmentPreview from "./ChatAttachmentPreview.vue";
 import SlashCommandMenu from "./SlashCommandMenu.vue";
 import SuggestionsPanel from "./SuggestionsPanel.vue";
@@ -200,19 +252,30 @@ function removeBufferedAt(index: number): void {
   );
 }
 
+const handsFree = useHandsFreePrefs();
+const { speaking: readAloudSpeaking, cancel: cancelReadAloud } = useReplyReadAloud();
+
+// Hands-free auto-send only ever sends text the mic produced: set when a
+// transcript lands, cleared the moment the user types (they took over) or
+// the draft empties (sent / cleared).
+const dictatedDraft = ref(false);
+
 // Local voice input (Mac-only). The mic button is hidden unless the
 // backend reports voice input ready; transcripts are appended to the
-// input for review, never auto-sent. See plans/done/feat-voice-input.md.
+// input for review, and only auto-sent when hands-free auto-send is on.
+// See plans/done/feat-voice-input.md.
 function insertTranscript(text: string): void {
   const current = props.modelValue;
   const next = current.trim().length > 0 ? `${current.trimEnd()} ${text}` : text;
   emit("update:modelValue", next);
+  dictatedDraft.value = true;
 }
 
 const {
   available: voiceAvailable,
   listening: voiceListening,
   transcribing: voiceTranscribing,
+  speaking: voiceSpeaking,
   start: startVoice,
   stop: stopVoice,
   refreshAvailability: refreshVoiceAvailability,
@@ -220,6 +283,13 @@ const {
   locale: () => locale.value,
   onTranscript: insertTranscript,
 });
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    if (value.trim().length === 0) dictatedDraft.value = false;
+  },
+);
 
 // Sticky per-session voice intent. Once the user turns the mic on it
 // stays "armed" for the session: capture pauses while the agent is
@@ -238,24 +308,28 @@ const micButtonClass = computed(() => {
 const micButtonIcon = computed(() => (!voiceSessionOn.value && voiceTranscribing.value ? "hourglass_top" : "mic"));
 const micButtonLabel = computed(() => (voiceSessionOn.value ? t("chatInput.voice.stop") : t("chatInput.voice.start")));
 
-// Disarm when the displayed session changes — voice intent is per
-// session and never persisted, so leaving and returning starts off.
+// Disarm when the displayed session changes — voice and camera intent
+// are per session and never persisted, so leaving and returning starts off.
 watch(
   () => props.sessionId,
   () => {
     voiceSessionOn.value = false;
+    dictatedDraft.value = false;
+    turnCameraOff();
   },
 );
 
-// Drive listening from (intent ∧ available ∧ not the agent's turn).
-// Auto-starts when armed and it becomes the user's turn; pauses when
-// the agent starts running; drops the intent if the mic can't start
-// (permission denied) so it doesn't retry every turn.
+// Drive listening from (intent ∧ available ∧ the user's turn). The
+// user's turn excludes both the agent running and a reply being read
+// aloud — the mic would otherwise transcribe the speakers. Auto-starts
+// when armed and it becomes the user's turn; pauses otherwise; drops
+// the intent if the mic can't start (permission denied) so it doesn't
+// retry every turn.
 function wantsToListen(): boolean {
-  return voiceSessionOn.value && voiceAvailable.value && !props.isRunning;
+  return voiceSessionOn.value && voiceAvailable.value && !props.isRunning && !readAloudSpeaking.value;
 }
 
-watch([voiceSessionOn, () => props.isRunning, voiceAvailable], () => {
+watch([voiceSessionOn, () => props.isRunning, voiceAvailable, readAloudSpeaking], () => {
   if (wantsToListen() && !voiceListening.value) {
     startVoice()
       .then((ok) => {
@@ -278,6 +352,59 @@ watch([voiceSessionOn, () => props.isRunning, voiceAvailable], () => {
 onMounted(() => {
   void refreshVoiceAvailability();
 });
+
+// Hands-free auto-send: once the user stops talking and the last segment
+// is transcribed, send the dictated draft without a click.
+useVoiceAutoSend(
+  () =>
+    isAutoSendReady({
+      enabled: handsFree.autoSend.value,
+      voiceArmed: voiceSessionOn.value,
+      dictatedDraft: dictatedDraft.value,
+      hasText: props.modelValue.trim().length > 0,
+      speaking: voiceSpeaking.value,
+      transcribing: voiceTranscribing.value,
+      agentRunning: props.isRunning,
+    }),
+  requestSend,
+);
+
+// Hands-free camera. `cameraOn` is the intent; `cameraStream` is set
+// once the browser grants access.
+const cameraButtonVisible = computed(() => handsFree.camera.value && isCameraSupported());
+const cameraOn = ref(false);
+const cameraError = ref<string | null>(null);
+const cameraPreview = ref<InstanceType<typeof CameraPreview> | null>(null);
+const { stream: cameraStream, start: startCamera, stop: stopCamera } = useCameraSnapshot();
+const cameraButtonLabel = computed(() => (cameraOn.value ? t("chatInput.camera.stop") : t("chatInput.camera.start")));
+
+function turnCameraOff(): void {
+  cameraOn.value = false;
+  cameraError.value = null;
+  stopCamera();
+}
+
+async function onCameraClick(): Promise<void> {
+  if (cameraOn.value) {
+    turnCameraOff();
+    return;
+  }
+  cameraError.value = null;
+  cameraOn.value = true;
+  const started = await startCamera();
+  // Toggled off while the permission prompt was up: not an error.
+  if (!started && cameraOn.value) {
+    cameraOn.value = false;
+    cameraError.value = t("chatInput.camera.unavailable");
+  }
+}
+
+watch(
+  () => handsFree.camera.value,
+  (enabled) => {
+    if (!enabled) turnCameraOff();
+  },
+);
 
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const fileError = ref<string | null>(null);
@@ -437,7 +564,23 @@ watch(
   },
 );
 
-const imeEnter = useImeAwareEnter(() => emit("send"));
+// Every send path (button, Enter, auto-send) comes through here, so an
+// open camera attaches what it sees at the moment of sending. Skipped
+// when the send won't go out now (empty, or queued behind a run) —
+// the snapshot would otherwise linger as a stale attachment.
+function requestSend(): void {
+  attachCameraSnapshot();
+  emit("send");
+}
+
+function attachCameraSnapshot(): void {
+  if (!cameraStream.value || props.isRunning || props.modelValue.trim().length === 0) return;
+  if (props.pastedFiles.length >= MAX_ATTACHMENTS) return;
+  const snapshot = cameraPreview.value?.capture() ?? null;
+  if (snapshot) emit("update:pastedFiles", [...props.pastedFiles, snapshot]);
+}
+
+const imeEnter = useImeAwareEnter(requestSend);
 
 // Inline "/" command palette. Shares the lightbulb Skills tab's data store;
 // owns only open/filter/highlight state here, with the keyboard interception
@@ -464,6 +607,8 @@ watch(slashMenuOpen, (open) => {
 function onInput(event: Event): void {
   const { target } = event;
   if (target instanceof HTMLTextAreaElement) emit("update:modelValue", target.value);
+  // Typing takes over from the mic: never auto-send a line mid-correction.
+  dictatedDraft.value = false;
 }
 
 function onKeydown(event: KeyboardEvent): void {

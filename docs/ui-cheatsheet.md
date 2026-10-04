@@ -119,10 +119,14 @@ In **Stack layout** this sidebar isn't rendered; the same data flows through `<S
 │ │  │ <SuggestionsPanel> (when open)   │ │ │                          │  │
 │ │  │ <SlashCommandMenu> (typing "/")  │ │ │                          │  │
 │ │  │   [slash-command-menu]           │ │ │                          │  │
+│ │  │ [read-aloud-indicator] (speaking)│ │ │                          │  │
+│ │  │ [camera-preview] (camera on)     │ │ │                          │  │
 │ │  │ [user-input]                  …  │ │ │                          │  │
 │ │  │ [suggestions-btn] (if queries)   │ │ │                          │  │
 │ │  │ [send-btn] [stop-btn]            │ │ │                          │  │
 │ │  │ [attach-file-btn]                │ │ │                          │  │
+│ │  │ [mic-btn] (voice input ready)    │ │ │                          │  │
+│ │  │ [camera-btn] (hands-free camera) │ │ │                          │  │
 │ │  └──────────────────────────────────┘ │ │                          │  │
 │ └───────────────────────────────────────┘ └──────────────────────────┘  │
 │                                                                         │

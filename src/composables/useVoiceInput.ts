@@ -41,6 +41,8 @@ export interface UseVoiceInput {
   available: Ref<boolean>;
   listening: Ref<boolean>;
   transcribing: Ref<boolean>;
+  /** An utterance is in progress (heard, not yet handed to the transcriber). */
+  speaking: Ref<boolean>;
   error: Ref<string | null>;
   refreshAvailability: () => Promise<void>;
   start: () => Promise<boolean>;
@@ -51,6 +53,7 @@ export function useVoiceInput(opts: UseVoiceInputOptions): UseVoiceInput {
   const available = ref(false);
   const listening = ref(false);
   const transcribing = ref(false);
+  const speaking = ref(false);
   const error = ref<string | null>(null);
 
   const transport: VoiceCaptureTransport = {
@@ -80,6 +83,7 @@ export function useVoiceInput(opts: UseVoiceInputOptions): UseVoiceInput {
       available.value = state.available;
       listening.value = state.listening;
       transcribing.value = state.transcribing;
+      speaking.value = state.speaking;
     },
   });
 
@@ -97,6 +101,7 @@ export function useVoiceInput(opts: UseVoiceInputOptions): UseVoiceInput {
     available,
     listening,
     transcribing,
+    speaking,
     error,
     refreshAvailability: capture.refreshAvailability,
     start,

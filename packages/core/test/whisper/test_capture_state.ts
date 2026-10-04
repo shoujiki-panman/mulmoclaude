@@ -15,11 +15,11 @@ describe("createCaptureState", () => {
     assert.equal(states.length, 0);
   });
 
-  it("emits with all three flags when available flips", () => {
+  it("emits with all four flags when available flips", () => {
     const { states, onState } = collector();
     const state = createCaptureState(onState);
     state.setAvailable(true);
-    assert.deepEqual(states, [{ available: true, listening: false, transcribing: false }]);
+    assert.deepEqual(states, [{ available: true, listening: false, transcribing: false, speaking: false }]);
   });
 
   it("does not emit when a setter writes the current value", () => {
@@ -39,7 +39,7 @@ describe("createCaptureState", () => {
     assert.equal(state.isListening(), false);
     state.setListening(true);
     assert.equal(state.isListening(), true);
-    assert.deepEqual(states.at(-1), { available: false, listening: true, transcribing: false });
+    assert.deepEqual(states.at(-1), { available: false, listening: true, transcribing: false, speaking: false });
     state.setListening(false);
     assert.equal(state.isListening(), false);
   });
@@ -48,9 +48,9 @@ describe("createCaptureState", () => {
     const { states, onState } = collector();
     const state = createCaptureState(onState);
     state.setPending(1);
-    assert.deepEqual(states.at(-1), { available: false, listening: false, transcribing: true });
+    assert.deepEqual(states.at(-1), { available: false, listening: false, transcribing: true, speaking: false });
     state.setPending(-1);
-    assert.deepEqual(states.at(-1), { available: false, listening: false, transcribing: false });
+    assert.deepEqual(states.at(-1), { available: false, listening: false, transcribing: false, speaking: false });
     assert.equal(states.length, 2);
   });
 
@@ -69,6 +69,30 @@ describe("createCaptureState", () => {
     );
   });
 
+  it("setSpeaking emits on each edge and is silent on repeats", () => {
+    const { states, onState } = collector();
+    const state = createCaptureState(onState);
+    state.setSpeaking(true);
+    state.setSpeaking(true);
+    assert.deepEqual(states, [{ available: false, listening: false, transcribing: false, speaking: true }]);
+    state.setSpeaking(false);
+    state.setSpeaking(false);
+    assert.equal(states.length, 2);
+    assert.equal(states.at(-1)?.speaking, false);
+  });
+
+  it("hands off speaking -> transcribing without a moment where both are off", () => {
+    // The order the capture loop uses at a segment end: enqueue (pending +1)
+    // first, then clear speaking. A host gating on "!speaking && !transcribing"
+    // must never see an all-clear between the two writes.
+    const { states, onState } = collector();
+    const state = createCaptureState(onState);
+    state.setSpeaking(true);
+    state.setPending(1);
+    state.setSpeaking(false);
+    assert.ok(states.every((snapshot) => snapshot.speaking || snapshot.transcribing));
+  });
+
   it("does not throw when no onState is provided", () => {
     const state = createCaptureState();
     assert.doesNotThrow(() => {
@@ -76,6 +100,8 @@ describe("createCaptureState", () => {
       state.setListening(true);
       state.setPending(1);
       state.setPending(-1);
+      state.setSpeaking(true);
+      state.setSpeaking(false);
     });
     assert.equal(state.isListening(), true);
   });

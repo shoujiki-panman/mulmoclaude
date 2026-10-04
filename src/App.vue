@@ -385,6 +385,7 @@ import { resolvePastedAttachment, type ResolvedAttachment } from "./utils/agent/
 import { applyAgentEvent, type AgentEventContext } from "./utils/agent/eventDispatch";
 import { parseSseEvent } from "./utils/agent/parseSseEvent";
 import { pushErrorMessage, beginUserTurn, updateResult, applyToolResultToSession } from "./utils/session/sessionHelpers";
+import { lastAssistantReplyText } from "./utils/session/lastAssistantReply";
 import { parseCollectionSlashSeed, makeSyntheticCollectionResult, hasRealCollectionResult } from "./utils/collections/presentSeed";
 import { mergeBufferedIntoDraft } from "./utils/chat/buffer";
 import { createInFlightShare } from "./utils/inFlightShare";
@@ -407,6 +408,8 @@ import { useGlobalImageErrorRepair } from "./composables/useImageErrorRepair";
 import { useMergedSessions } from "./composables/useMergedSessions";
 import { useLayoutMode } from "./composables/useLayoutMode";
 import { useSidePanelVisible } from "./composables/useSidePanelVisible";
+import { useHandsFreePrefs } from "./composables/useHandsFreePrefs";
+import { cancelReadAloud, readAloud } from "./composables/useReplyReadAloud";
 import { useMcpTools } from "./composables/useMcpTools";
 import { useRoles } from "./composables/useRoles";
 import { useCurrentRole } from "./composables/useCurrentRole";
@@ -948,10 +951,32 @@ function handleSessionFinished(sessionId: string): void {
   });
   if (currentSessionId.value === sessionId) {
     markSessionRead(sessionId);
+    if (session) readFinishedReplyAloud(session);
   } else if (!hasPendingGenerations(sessionId)) {
     unsubscribeSession(sessionId);
   }
 }
+
+// ── Hands-free read-aloud ───────────────────────────────────
+// Speak the reply a run ended on. Runs in the same tick that flips
+// `isRunning` off above, so ChatInput's mic watcher already sees
+// "reading aloud" when it would otherwise resume listening — the mic
+// never hears the speakers.
+const handsFree = useHandsFreePrefs();
+
+function readFinishedReplyAloud(session: ActiveSession): void {
+  if (!handsFree.readAloud.value) return;
+  const reply = lastAssistantReplyText(session.toolResults, session.runStartIndex);
+  if (reply !== null) readAloud(reply, currentLocale.value);
+}
+
+watch(currentSessionId, () => cancelReadAloud());
+watch(
+  () => handsFree.readAloud.value,
+  (enabled) => {
+    if (!enabled) cancelReadAloud();
+  },
+);
 
 // After the client silently loses events, this pulls fresh state from the
 // server so the UI recovers without a page reload (#1915). Two trigger
@@ -1064,6 +1089,8 @@ async function sendMessage(text?: string) {
   const fromInput = typeof text !== "string";
   const message = fromInput ? userInput.value.trim() : text.trim();
   if (!message) return;
+  // A new message makes the reply being read aloud moot.
+  cancelReadAloud();
   // Run in flight: queue instead of dispatching. The input isn't locked,
   // so the user keeps composing; queued lines come back on completion.
   if (activeSessionRunning.value) {

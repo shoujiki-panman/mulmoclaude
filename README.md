@@ -456,7 +456,7 @@ Once configured, you can paste any `x.com` or `twitter.com` URL into the chat an
 
 ## Optional: Local Voice Input (macOS)
 
-Dictate chat messages instead of typing them. Click the mic button to start listening; as you pause, each spoken segment is transcribed and appended to the input for review before you send it. Click again to stop. Once turned on, the mic stays armed for the session — it pauses while the agent is responding and resumes automatically on your next turn. Transcription runs **entirely on the machine running MulmoClaude** via [whisper.cpp](https://github.com/ggml-org/whisper.cpp) with Metal acceleration: no audio leaves the device, no per-minute API cost. The transcribed text is never auto-sent — you review and send it yourself.
+Dictate chat messages instead of typing them. Click the mic button to start listening; as you pause, each spoken segment is transcribed and appended to the input for review before you send it. Click again to stop. Once turned on, the mic stays armed for the session — it pauses while the agent is responding and resumes automatically on your next turn. Transcription runs **entirely on the machine running MulmoClaude** via [whisper.cpp](https://github.com/ggml-org/whisper.cpp) with Metal acceleration: no audio leaves the device, no per-minute API cost. By default the transcribed text is never auto-sent — you review and send it yourself ([Hands-free mode](#optional-hands-free-mode) can send it for you).
 
 This is **disabled by default** and **macOS-only** (Apple Silicon recommended). The mic button stays hidden until the feature is set up and enabled.
 
@@ -486,6 +486,18 @@ This is **disabled by default** and **macOS-only** (Apple Silicon recommended). 
 - **Model choice**: `large-v3-turbo` (default), `small`, and `base` are selectable in Settings → Voice; the lighter models suit lower-RAM machines.
 - **Privacy**: audio is processed on-device and temporary files are deleted immediately after transcription. (The "on-device" guarantee assumes you run the server on your own machine.)
 - Models live under `~/mulmoclaude/models/` — deliberately outside the git-managed `data/` workspace tree. Disabling the feature offers to delete the downloaded weights.
+
+## Optional: Hands-free mode
+
+For work that keeps your hands busy — following step-by-step instructions while soldering, cooking or repairing something — **Settings → Voice → Hands-free** has three switches. All are off by default and saved per device (in the browser's `localStorage`), so turning them on at the workbench changes nothing on your other machines.
+
+| Switch | What it does | Needs |
+| --- | --- | --- |
+| **Send voice input automatically** | Once you stop talking and the last segment is transcribed, the dictated message is sent without pressing Send. Typing in the input cancels it, so a line you are correcting is never sent half-done. | [Local voice input](#optional-local-voice-input-macos) |
+| **Read replies aloud** | When a reply finishes, it is read out with the browser's built-in voice. Code blocks, URLs and images are skipped, and a long reply is read up to about 1,500 characters. The mic pauses while it speaks so it can't transcribe the reply back as your turn; the **Stop** chip above the input ends it early. | A browser with speech synthesis (Chrome, Edge, Safari, Firefox) |
+| **Show a camera button** | Adds a camera button to the chat input. While the camera is on, a live preview sits above the input and every message you send carries a snapshot of it — ask "is this joint OK?" and the agent sees the joint. | A camera, and MulmoClaude opened on `localhost` or over HTTPS (browsers only allow cameras on secure pages) |
+
+With all three on and a USB camera — or a phone on a stand — pointed at the bench, the loop is: speak → the transcript and a snapshot go out → the reply is read aloud → the mic re-arms for your next turn. Read-aloud and the camera work on any OS; automatic sending needs voice input, which is macOS-only for now.
 
 ## Configuring Additional Tools (Web Settings)
 

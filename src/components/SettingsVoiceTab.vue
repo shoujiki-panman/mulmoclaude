@@ -63,12 +63,15 @@
     </template>
 
     <p v-if="errorMessage" class="text-sm text-red-700" role="alert" data-testid="settings-voice-error">{{ errorMessage }}</p>
+
+    <SettingsHandsFreeSection />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import SettingsHandsFreeSection from "./SettingsHandsFreeSection.vue";
 import { apiGet, apiPost, apiPut } from "../utils/api";
 import { API_ROUTES } from "../config/apiRoutes";
 import type { VoiceInputStatusResponse } from "../composables/useVoiceInput";

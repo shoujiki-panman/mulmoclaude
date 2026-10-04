@@ -72,6 +72,17 @@ const enMessages = {
       start: "Start voice input",
       stop: "Stop voice input",
     },
+    camera: {
+      start: "Turn on the camera (a snapshot is attached to each message you send)",
+      stop: "Turn off the camera",
+      unavailable: "Couldn't start the camera. Check the browser's camera permission.",
+      attachHint: "A snapshot of this view is attached when you send.",
+      previewLabel: "Camera preview",
+    },
+    readAloud: {
+      speaking: "Reading the reply aloud…",
+      stop: "Stop reading",
+    },
   },
   cspViolation: {
     notice:
@@ -391,6 +402,18 @@ const enMessages = {
       retry: "Retry",
       loadError: "Failed to load settings",
       saveError: "Failed to save",
+      handsFree: {
+        heading: "Hands-free",
+        description: "For when your hands are busy — for example, following instructions while soldering. Saved on this device only.",
+        autoSendLabel: "Send voice input automatically",
+        autoSendHint: "When you stop talking, the message is sent without pressing Send. Typing in the box cancels it. Needs voice input (above).",
+        readAloudLabel: "Read replies aloud",
+        readAloudHint: "Uses your browser's built-in voice. The mic pauses while a reply is being read.",
+        readAloudUnsupported: "This browser can't read text aloud.",
+        cameraLabel: "Show a camera button",
+        cameraHint: "Adds a camera button to the chat input. While the camera is on, a snapshot is attached to every message you send.",
+        cameraUnsupported: "The camera needs MulmoClaude to be opened on localhost or over HTTPS.",
+      },
     },
     chatIndexTab: {
       description:

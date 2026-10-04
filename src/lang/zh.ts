@@ -55,6 +55,17 @@ const zhMessages = {
       start: "开始语音输入",
       stop: "停止语音输入",
     },
+    camera: {
+      start: "打开摄像头（每次发送消息时附上一张快照）",
+      stop: "关闭摄像头",
+      unavailable: "无法启动摄像头。请检查浏览器的摄像头权限。",
+      attachHint: "发送时会附上此画面的快照。",
+      previewLabel: "摄像头预览",
+    },
+    readAloud: {
+      speaking: "正在朗读回复…",
+      stop: "停止朗读",
+    },
   },
   cspViolation: {
     notice: "⚠ 某视图尝试加载 {host}，但内容安全策略已将其拦截（{directive}）。如需允许，请将该主机添加到 config/csp.json（仅在你信任它时）。",
@@ -361,6 +372,18 @@ const zhMessages = {
       retry: "重试",
       loadError: "加载设置失败",
       saveError: "保存失败",
+      handsFree: {
+        heading: "免提",
+        description: "适合双手忙碌时使用——例如一边焊接一边听操作步骤。设置仅保存在此设备上。",
+        autoSendLabel: "自动发送语音输入",
+        autoSendHint: "说完话后，无需按发送即可发出消息。在输入框中打字会取消自动发送。需要启用上方的语音输入。",
+        readAloudLabel: "朗读回复",
+        readAloudHint: "使用浏览器内置的语音。朗读期间麦克风会暂停。",
+        readAloudUnsupported: "此浏览器不支持朗读文本。",
+        cameraLabel: "显示摄像头按钮",
+        cameraHint: "在聊天输入框中添加摄像头按钮。摄像头开启期间，每次发送消息都会附上一张快照。",
+        cameraUnsupported: "使用摄像头需要通过 localhost 或 HTTPS 打开 MulmoClaude。",
+      },
     },
     chatIndexTab: {
       description:

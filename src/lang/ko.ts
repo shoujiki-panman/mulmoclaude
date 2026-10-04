@@ -57,6 +57,17 @@ const koMessages = {
       start: "음성 입력 시작",
       stop: "음성 입력 중지",
     },
+    camera: {
+      start: "카메라 켜기 (메시지를 보낼 때마다 스냅샷 첨부)",
+      stop: "카메라 끄기",
+      unavailable: "카메라를 시작할 수 없습니다. 브라우저의 카메라 권한을 확인하세요.",
+      attachHint: "보낼 때 이 화면의 스냅샷이 첨부됩니다.",
+      previewLabel: "카메라 미리보기",
+    },
+    readAloud: {
+      speaking: "답변을 읽어 주는 중…",
+      stop: "읽기 중지",
+    },
   },
   cspViolation: {
     notice: "⚠ 뷰가 {host}를 불러오려 했지만 콘텐츠 보안 정책({directive})이 차단했습니다. 허용하려면 신뢰하는 경우에만 config/csp.json에 호스트를 추가하세요.",
@@ -371,6 +382,18 @@ const koMessages = {
       retry: "다시 시도",
       loadError: "설정을 불러오지 못했습니다",
       saveError: "저장에 실패했습니다",
+      handsFree: {
+        heading: "핸즈프리",
+        description: "손을 쓸 수 없을 때를 위한 기능입니다. 예: 납땜하면서 안내 듣기. 설정은 이 기기에만 저장됩니다.",
+        autoSendLabel: "음성 입력 자동 전송",
+        autoSendHint: "말을 마치면 전송 버튼을 누르지 않아도 메시지가 전송됩니다. 입력란에 타이핑하면 취소됩니다. 위의 음성 입력이 필요합니다.",
+        readAloudLabel: "답변 읽어 주기",
+        readAloudHint: "브라우저에 내장된 음성을 사용합니다. 읽는 동안에는 마이크가 일시 중지됩니다.",
+        readAloudUnsupported: "이 브라우저는 텍스트 읽기를 지원하지 않습니다.",
+        cameraLabel: "카메라 버튼 표시",
+        cameraHint: "채팅 입력란에 카메라 버튼을 추가합니다. 카메라가 켜져 있는 동안에는 메시지를 보낼 때마다 스냅샷이 첨부됩니다.",
+        cameraUnsupported: "카메라를 사용하려면 MulmoClaude를 localhost 또는 HTTPS로 열어야 합니다.",
+      },
     },
     chatIndexTab: {
       description:

@@ -57,6 +57,17 @@ const jaMessages = {
       start: "音声入力を開始",
       stop: "音声入力を停止",
     },
+    camera: {
+      start: "カメラをオン（送信するたびに写真を添付）",
+      stop: "カメラをオフ",
+      unavailable: "カメラを起動できませんでした。ブラウザのカメラの許可を確認してください。",
+      attachHint: "送信時に、この映像の写真が添付されます。",
+      previewLabel: "カメラのプレビュー",
+    },
+    readAloud: {
+      speaking: "返事を読み上げ中…",
+      stop: "読み上げを止める",
+    },
   },
   cspViolation: {
     notice:
@@ -373,6 +384,18 @@ const jaMessages = {
       retry: "再試行",
       loadError: "設定の読み込みに失敗しました",
       saveError: "保存に失敗しました",
+      handsFree: {
+        heading: "ハンズフリー",
+        description: "手がふさがっている作業向けです（例: はんだ付けをしながら手順を聞く）。設定はこの端末にだけ保存されます。",
+        autoSendLabel: "音声入力を自動で送信する",
+        autoSendHint: "話し終えると、送信ボタンを押さなくてもメッセージが送られます。入力欄で文字を打つと取り消されます。上の音声入力が必要です。",
+        readAloudLabel: "返事を読み上げる",
+        readAloudHint: "ブラウザ内蔵の音声で読み上げます。読み上げ中はマイクが一時停止します。",
+        readAloudUnsupported: "このブラウザは読み上げに対応していません。",
+        cameraLabel: "カメラボタンを表示する",
+        cameraHint: "チャット入力欄にカメラボタンを追加します。カメラがオンの間は、送信するたびに写真が添付されます。",
+        cameraUnsupported: "カメラを使うには、MulmoClaude を localhost か HTTPS で開く必要があります。",
+      },
     },
     chatIndexTab: {
       description:

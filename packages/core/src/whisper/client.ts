@@ -65,6 +65,11 @@ export interface VoiceCaptureState {
   available: boolean;
   listening: boolean;
   transcribing: boolean;
+  /** True while the segment being recorded holds speech that has not been
+   *  handed to the transcriber yet — from the first loud frame until the pause
+   *  that closes the segment. Lets a host tell "the user paused and is done"
+   *  apart from "the user is mid-sentence" (e.g. before sending on their behalf). */
+  speaking: boolean;
 }
 
 export interface VoiceCaptureCallbacks {
@@ -74,7 +79,7 @@ export interface VoiceCaptureCallbacks {
   onEmpty?: (() => void) | undefined;
   /** A recoverable error message (transport failure, permission denied, etc.). */
   onError?: ((message: string) => void) | undefined;
-  /** Pushed whenever available/listening/transcribing changes. */
+  /** Pushed whenever available/listening/transcribing/speaking changes. */
   onState?: ((state: VoiceCaptureState) => void) | undefined;
 }
 
@@ -89,20 +94,22 @@ export interface CaptureStateController {
   setAvailable: (value: boolean) => void;
   setListening: (value: boolean) => void;
   setPending: (delta: number) => void;
+  setSpeaking: (value: boolean) => void;
   isListening: () => boolean;
 }
 
-// Owns the three observable flags. Each setter emits only on an actual change so
+// Owns the four observable flags. Each setter emits only on an actual change so
 // the host's reactivity never churns on a no-op write. `pending` is a private
 // counter; `transcribing` is true exactly while at least one send is in flight.
 export function createCaptureState(onState?: (state: VoiceCaptureState) => void): CaptureStateController {
   let available = false;
   let listening = false;
   let transcribing = false;
+  let speaking = false;
   let pending = 0;
 
   function emit(): void {
-    onState?.({ available, listening, transcribing });
+    onState?.({ available, listening, transcribing, speaking });
   }
   function setAvailable(value: boolean): void {
     if (available !== value) {
@@ -124,8 +131,14 @@ export function createCaptureState(onState?: (state: VoiceCaptureState) => void)
       emit();
     }
   }
+  function setSpeaking(value: boolean): void {
+    if (speaking !== value) {
+      speaking = value;
+      emit();
+    }
+  }
 
-  return { setAvailable, setListening, setPending, isListening: () => listening };
+  return { setAvailable, setListening, setPending, setSpeaking, isListening: () => listening };
 }
 
 export interface AvailabilityPoller {
@@ -416,6 +429,9 @@ interface CaptureRuntime {
 function stopCapture(runtime: CaptureRuntime, state: CaptureStateController, session: RecorderSession): void {
   runtime.generation += 1;
   state.setListening(false);
+  // The in-flight segment is about to be dropped (its generation is now
+  // stale), so nothing the user was saying is still pending.
+  state.setSpeaking(false);
   if (runtime.monitorHandle !== null) {
     window.clearInterval(runtime.monitorHandle);
     runtime.monitorHandle = null;
@@ -428,7 +444,10 @@ function stopCapture(runtime: CaptureRuntime, state: CaptureStateController, ses
 // One VAD tick against the audio graph's current window. No-op when the graph
 // is not attached (defensive: `stopCapture` clears `monitorHandle` before
 // `audioGraph.teardown()`, so this is the belt-and-braces for any late fire).
-function monitorTick(runtime: CaptureRuntime, session: RecorderSession): void {
+// `speaking` only ever turns ON here; it turns off when the segment is handed
+// to the queue (`handleSegmentEnd`) so there is no gap between "speaking" and
+// "transcribing" for a host to mistake for "done".
+function monitorTick(runtime: CaptureRuntime, session: RecorderSession, state: CaptureStateController): void {
   if (!runtime.audioGraph?.isAttached()) return;
   const rms = computeRms(runtime.audioGraph.sample());
   const {
@@ -436,7 +455,10 @@ function monitorTick(runtime: CaptureRuntime, session: RecorderSession): void {
     silenceStart: nextSilence,
     cut,
   } = evaluateVad({ hasSpeech: session.hadSpeech(), silenceStart: runtime.silenceStart }, runtime.segmentStart, rms, Date.now(), VAD_CONFIG);
-  if (hasSpeech) session.markSpeech();
+  if (hasSpeech) {
+    session.markSpeech();
+    state.setSpeaking(true);
+  }
   runtime.silenceStart = nextSilence;
   if (cut) session.cut();
 }
@@ -454,6 +476,8 @@ export function createVoiceCapture(transport: VoiceCaptureTransport, language: (
     // in blob/hadSpeech/gen is already independent of session state.
     if (state.isListening()) startRecorder();
     if (hadSpeech && blob.size > 0 && gen === runtime.generation) segments.enqueue(blob, gen);
+    // After the enqueue, so `transcribing` is already true when this flips off.
+    state.setSpeaking(false);
   }
 
   function startRecorder(): void {
@@ -475,7 +499,7 @@ export function createVoiceCapture(transport: VoiceCaptureTransport, language: (
       runtime.mimeType = capture.mimeType;
       state.setListening(true);
       startRecorder();
-      runtime.monitorHandle = window.setInterval(() => monitorTick(runtime, session), MONITOR_INTERVAL_MS);
+      runtime.monitorHandle = window.setInterval(() => monitorTick(runtime, session, state), MONITOR_INTERVAL_MS);
       return true;
     } finally {
       runtime.startInFlight = false;
