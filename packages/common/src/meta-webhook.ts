@@ -66,3 +66,38 @@ export function extractWhatsAppMessages(body: unknown): WhatsAppTextMessage[] {
     .map(parseWhatsAppMessage)
     .filter((msg): msg is WhatsAppTextMessage => msg !== null);
 }
+
+/** An inbound photo. The bytes are NOT in the webhook — `mediaId` is what the
+ *  Graph API resolves to a short-lived download URL. */
+export interface WhatsAppImageMessage {
+  from: string;
+  mediaId: string;
+  mimeType?: string;
+  /** Text the sender typed under the photo, trimmed; absent when empty. */
+  caption?: string;
+}
+
+function parseWhatsAppImageMessage(msg: unknown): WhatsAppImageMessage | null {
+  if (!isRecord(msg) || msg.type !== "image" || typeof msg.from !== "string") return null;
+  if (!isRecord(msg.image) || typeof msg.image.id !== "string" || !msg.image.id) return null;
+  const { mime_type: mimeType, caption } = msg.image;
+  const trimmedCaption = typeof caption === "string" ? caption.trim() : "";
+  return {
+    from: msg.from,
+    mediaId: msg.image.id,
+    ...(typeof mimeType === "string" && mimeType ? { mimeType } : {}),
+    ...(trimmedCaption ? { caption: trimmedCaption } : {}),
+  };
+}
+
+/** Every inbound photo across all `entry[].changes[].value.messages[]` in a
+ *  WhatsApp Cloud API webhook body, skipping other types / malformed. Kept
+ *  apart from `extractWhatsAppMessages` so text-only consumers (the relay)
+ *  are unaffected. */
+export function extractWhatsAppImageMessages(body: unknown): WhatsAppImageMessage[] {
+  if (!isRecord(body) || !isUnknownArray(body.entry)) return [];
+  return body.entry
+    .flatMap(whatsAppRawMessagesOf)
+    .map(parseWhatsAppImageMessage)
+    .filter((msg): msg is WhatsAppImageMessage => msg !== null);
+}

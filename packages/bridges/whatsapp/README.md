@@ -33,6 +33,7 @@ npx @mulmobridge/mock-server &
 WHATSAPP_ACCESS_TOKEN=... \
 WHATSAPP_PHONE_NUMBER_ID=... \
 WHATSAPP_VERIFY_TOKEN=my-verify-token \
+WHATSAPP_APP_SECRET=... \
 MULMOCLAUDE_AUTH_TOKEN=mock-test-token \
 npx @mulmobridge/whatsapp
 
@@ -40,6 +41,7 @@ npx @mulmobridge/whatsapp
 WHATSAPP_ACCESS_TOKEN=... \
 WHATSAPP_PHONE_NUMBER_ID=... \
 WHATSAPP_VERIFY_TOKEN=my-verify-token \
+WHATSAPP_APP_SECRET=... \
 npx @mulmobridge/whatsapp
 ```
 
@@ -50,8 +52,10 @@ npx @mulmobridge/whatsapp
 | `WHATSAPP_ACCESS_TOKEN` | Yes | Permanent access token from Meta dashboard |
 | `WHATSAPP_PHONE_NUMBER_ID` | Yes | Phone number ID |
 | `WHATSAPP_VERIFY_TOKEN` | Yes | Arbitrary string for webhook verification |
+| `WHATSAPP_APP_SECRET` | Yes | App secret (Meta Dashboard → App settings → Basic) — verifies each webhook's `x-hub-signature-256` |
 | `WHATSAPP_BRIDGE_PORT` | No | Webhook port (default: 3003) |
 | `WHATSAPP_ALLOWED_NUMBERS` | No | CSV of phone numbers (empty = all) |
+| `WHATSAPP_PHOTO_WAIT_SECONDS` | No | How long a photo sent **without** a caption waits for your next text (default: 30). `0` sends every photo right away. See [Photos](#photos). |
 | `MULMOCLAUDE_API_URL` | No | Default `http://localhost:3001` |
 | `MULMOCLAUDE_AUTH_TOKEN` | No | Bearer token |
 | `WHATSAPP_BRIDGE_DEFAULT_ROLE` | No | Role id to seed new bridge sessions with (e.g. `coder`, `general`). Applied ONLY when a whatsapp session first appears — once the user switches role via `/role <id>` the session's own role wins. Unknown role ids silently fall back to the server's default with a warn log. |
@@ -74,6 +78,26 @@ MULMOCLAUDE_AUTH_TOKEN=long-random-string \
 ```
 
 Recommended: at least 32 characters of random data (the server logs a warning at startup for shorter values).
+
+## Photos
+
+Send a photo and MulmoClaude sees it — the bridge downloads it from WhatsApp and attaches it to the message, so you can ask about what is in front of you.
+
+- **Photo with a caption** → sent right away; the caption is the question.
+- **Photo without a caption** → held for up to `WHATSAPP_PHOTO_WAIT_SECONDS` (30 s by default). Your next text in that window is sent **together with** the photo as one message. Several photos in a row are collected (up to 4). If no text arrives, the photo goes out on its own and MulmoClaude describes it.
+- If a photo can't be downloaded, MulmoClaude is told so (rather than answering about a photo it never received); a photo sent alone gets a "please send it again" reply.
+- Only images are forwarded — videos, voice notes, stickers and photos sent as a *document* are ignored. Photos over 10 MB are refused.
+
+Photos need the direct webhook setup above: the [MulmoBridge relay](https://www.npmjs.com/package/@mulmobridge/relay) forwards text only.
+
+### Hands-free with Ray-Ban Meta glasses
+
+Glasses that can share to WhatsApp work as a hands-free camera. Save the bridge's WhatsApp number as a contact (say, "MulmoClaude"), connect WhatsApp in the Meta AI app, then:
+
+1. "Hey Meta, send a photo to MulmoClaude on WhatsApp."
+2. Within 30 seconds: "Hey Meta, send a message to MulmoClaude on WhatsApp: is this solder joint OK?"
+
+Both reach MulmoClaude as one message, and the reply arrives as a WhatsApp message the glasses can read out. The exact voice commands depend on your glasses' language and app version.
 
 ## Notes
 

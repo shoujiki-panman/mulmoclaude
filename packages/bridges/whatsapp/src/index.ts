@@ -10,18 +10,25 @@
 //   WHATSAPP_APP_SECRET      — App secret for x-hub-signature-256 HMAC
 //
 // Optional:
-//   WHATSAPP_BRIDGE_PORT      — webhook port (default: 3003)
-//   WHATSAPP_ALLOWED_NUMBERS  — CSV of phone numbers (empty = all)
+//   WHATSAPP_BRIDGE_PORT        — webhook port (default: 3003)
+//   WHATSAPP_ALLOWED_NUMBERS    — CSV of phone numbers (empty = all)
+//   WHATSAPP_PHOTO_WAIT_SECONDS — how long a photo without a caption waits
+//                                 for the sender's next text (default: 30,
+//                                 0 = send photos right away)
 
 import "dotenv/config";
-import { createBridgeClient } from "@mulmobridge/client";
+import { createBridgeClient, formatAckReply } from "@mulmobridge/client";
+import type { Attachment } from "@mulmobridge/protocol";
 import { createWebhookApp, registerMetaWebhook } from "@mulmobridge/webhook-runtime";
 import { parseCsvSet } from "@mulmoclaude/common";
-import { extractWhatsAppMessages, type WhatsAppTextMessage } from "@mulmoclaude/common/meta-webhook";
+import { extractWhatsAppImageMessages, extractWhatsAppMessages, type WhatsAppImageMessage, type WhatsAppTextMessage } from "@mulmoclaude/common/meta-webhook";
+import { downloadWhatsAppImage } from "./media.js";
+import { PHOTO_FAILED_REPLY, composePhotoTurnText, createPhotoBuffer, parsePhotoWaitMs } from "./photoBuffer.js";
 
 const TRANSPORT_ID = "whatsapp";
 const PORT = Number(process.env.WHATSAPP_BRIDGE_PORT) || 3003;
 const FETCH_TIMEOUT_MS = 30_000;
+const PHOTO_WAIT_MS = parsePhotoWaitMs(process.env.WHATSAPP_PHOTO_WAIT_SECONDS);
 
 function readRequiredEnv(): { accessToken: string; phoneNumberId: string; verifyToken: string; appSecret: string } {
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -88,25 +95,58 @@ async function sendWhatsAppMessage(recipientId: string, text: string): Promise<v
 
 const app = createWebhookApp();
 
-async function processOneMessage(msg: WhatsAppTextMessage): Promise<void> {
-  if (!allowAll && !allowedNumbers.has(msg.from)) {
-    console.log(`[whatsapp] denied from=${msg.from}`);
-    return;
-  }
+function isAllowed(sender: string): boolean {
+  if (allowAll || allowedNumbers.has(sender)) return true;
+  console.log(`[whatsapp] denied from=${sender}`);
+  return false;
+}
 
-  console.log(`[whatsapp] message from=${msg.from} len=${msg.text.body.length}`);
+async function downloadPhotos(photos: readonly WhatsAppImageMessage[]): Promise<Attachment[]> {
+  const results = await Promise.all(photos.map((photo) => downloadWhatsAppImage(photo.mediaId, { accessToken })));
+  return results.filter((attachment): attachment is Attachment => attachment !== null);
+}
 
+/** Send one turn to MulmoClaude and the reply back to WhatsApp. `question` is
+ *  what the sender typed (a text or a caption); null for photos sent alone. */
+async function relayToMulmo(sender: string, question: string | null, photos: readonly WhatsAppImageMessage[]): Promise<void> {
   try {
-    const ack = await mulmo.send(msg.from, msg.text.body);
-    if (ack.ok) {
-      await sendWhatsAppMessage(msg.from, ack.reply ?? "");
-    } else {
-      const status = ack.status ? ` (${ack.status})` : "";
-      await sendWhatsAppMessage(msg.from, `Error${status}: ${ack.error ?? "unknown"}`);
+    const attachments = await downloadPhotos(photos);
+    if (question === null && attachments.length === 0) {
+      await sendWhatsAppMessage(sender, PHOTO_FAILED_REPLY);
+      return;
     }
+    const text = composePhotoTurnText(question, photos.length - attachments.length);
+    const ack = await mulmo.send(sender, text, attachments.length > 0 ? attachments : undefined);
+    await sendWhatsAppMessage(sender, formatAckReply(ack));
   } catch (err) {
     console.error(`[whatsapp] message handling failed: ${err}`);
   }
+}
+
+const photoBuffer = createPhotoBuffer<WhatsAppImageMessage>({
+  waitMs: PHOTO_WAIT_MS,
+  onTimeout: (sender, photos) => {
+    void relayToMulmo(sender, null, photos);
+  },
+});
+
+async function processTextMessage(msg: WhatsAppTextMessage): Promise<void> {
+  if (!isAllowed(msg.from)) return;
+  const photos = photoBuffer.take(msg.from);
+  console.log(`[whatsapp] message from=${msg.from} len=${msg.text.body.length} photos=${photos.length}`);
+  await relayToMulmo(msg.from, msg.text.body, photos);
+}
+
+// A captioned photo carries its own question and goes out now; a bare one
+// waits for the sender's next text so the two arrive as one turn.
+async function processImageMessage(photo: WhatsAppImageMessage): Promise<void> {
+  if (!isAllowed(photo.from)) return;
+  console.log(`[whatsapp] photo from=${photo.from} caption=${photo.caption ? "yes" : "no"}`);
+  if (photo.caption === undefined && PHOTO_WAIT_MS > 0) {
+    photoBuffer.hold(photo.from, photo);
+    return;
+  }
+  await relayToMulmo(photo.from, photo.caption ?? null, [...photoBuffer.take(photo.from), photo]);
 }
 
 /** `undefined` is an unambiguous parse-failure sentinel — JSON has no
@@ -125,8 +165,12 @@ async function handleWebhookBody(rawBody: string): Promise<void> {
     console.error("[whatsapp] malformed JSON in webhook body");
     return;
   }
+  // Photos first, so a body carrying a photo AND its question pairs them up.
+  for (const photo of extractWhatsAppImageMessages(parsed)) {
+    await processImageMessage(photo);
+  }
   for (const msg of extractWhatsAppMessages(parsed)) {
-    await processOneMessage(msg);
+    await processTextMessage(msg);
   }
 }
 

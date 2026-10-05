@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { extractMessengerMessages, extractWhatsAppMessages } from "../src/meta-webhook.ts";
+import { extractMessengerMessages, extractWhatsAppImageMessages, extractWhatsAppMessages } from "../src/meta-webhook.ts";
 
 // ── Messenger ──────────────────────────────────────────────────────
 
@@ -99,4 +99,48 @@ test("extractWhatsAppMessages: empty / malformed / null bodies yield []", () => 
   assert.deepEqual(extractWhatsAppMessages(null), []);
   assert.deepEqual(extractWhatsAppMessages(undefined), []);
   assert.deepEqual(extractWhatsAppMessages([]), []);
+});
+
+// ── WhatsApp photos ────────────────────────────────────────────────
+
+function whatsAppBody(...messages: unknown[]): unknown {
+  return { entry: [{ changes: [{ value: { messages } }] }] };
+}
+
+test("extractWhatsAppImageMessages: photo with mime type and caption", () => {
+  const body = whatsAppBody({ type: "image", from: "p1", image: { id: "m1", mime_type: "image/jpeg", sha256: "x", caption: "  is this OK?  " } });
+  assert.deepEqual(extractWhatsAppImageMessages(body), [{ from: "p1", mediaId: "m1", mimeType: "image/jpeg", caption: "is this OK?" }]);
+});
+
+test("extractWhatsAppImageMessages: omits an absent or blank caption and mime type", () => {
+  const body = whatsAppBody(
+    { type: "image", from: "p1", image: { id: "m1" } },
+    { type: "image", from: "p2", image: { id: "m2", caption: "   ", mime_type: "" } },
+  );
+  assert.deepEqual(extractWhatsAppImageMessages(body), [
+    { from: "p1", mediaId: "m1" },
+    { from: "p2", mediaId: "m2" },
+  ]);
+});
+
+test("extractWhatsAppImageMessages: skips text, missing / empty media ids and non-string senders", () => {
+  const body = whatsAppBody(
+    { type: "text", from: "p1", text: { body: "hello" } },
+    { type: "image", from: "p2" },
+    { type: "image", from: "p3", image: { id: "" } },
+    { type: "image", from: 7, image: { id: "m4" } },
+    { type: "document", from: "p5", document: { id: "m5" } },
+  );
+  assert.deepEqual(extractWhatsAppImageMessages(body), []);
+});
+
+test("extractWhatsAppImageMessages and extractWhatsAppMessages split one mixed body", () => {
+  const body = whatsAppBody({ type: "image", from: "p", image: { id: "m" } }, { type: "text", from: "p", text: { body: "and this?" } });
+  assert.deepEqual(extractWhatsAppImageMessages(body), [{ from: "p", mediaId: "m" }]);
+  assert.deepEqual(extractWhatsAppMessages(body), [{ from: "p", text: { body: "and this?" } }]);
+});
+
+test("extractWhatsAppImageMessages: malformed bodies yield []", () => {
+  assert.deepEqual(extractWhatsAppImageMessages(null), []);
+  assert.deepEqual(extractWhatsAppImageMessages({ entry: "nope" }), []);
 });
