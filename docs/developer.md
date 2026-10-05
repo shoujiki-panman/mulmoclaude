@@ -45,6 +45,7 @@ The `.github/workflows/pr_triage.yaml` workflow runs on every PR and enforces th
 - PRs from maintainers and allowlisted bots fall through. The current allowlist is `isamu`, `snakajima`, `ystknsh`, `yuki0627`, `dependabot[bot]`, `coderabbitai[bot]`, `sourcery-ai[bot]`. To add a maintainer, edit the `MAINTAINERS` list in the workflow and the same list here.
 - PRs from anyone else are accepted automatically when the diff is ≤ 10 lines (additions + deletions).
 - Larger non-maintainer PRs receive a templated comment that links back to this section and asks for an issue first — **the issue body's first three lines should be a compact summary of the problem and the proposed plan** so a maintainer can decide whether to engage at a glance — and the PR is closed.
+- Forks skip the workflow (`github.event.repository.fork`). The allowlist names this repository's maintainers, so in a fork it would close the fork owner's own PRs.
 
 The line cap and the documentation are intentionally kept in lock-step. If the cap moves, update both the workflow's `LINE_LIMIT` and the bullet above in the same commit.
 

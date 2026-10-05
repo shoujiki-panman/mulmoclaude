@@ -73,7 +73,10 @@ jobs:
     # NOT idempotent and posts another copy of the closing template.
     # This guard is the second half of the #1869 fix (the first half
     # is dropping `synchronize` from `types` above).
-    if: github.event.pull_request.state == 'open'
+    #
+    # Forks skip it too: MAINTAINERS names this repository's maintainers,
+    # so in a fork it would close the fork owner's own PRs.
+    if: github.event.pull_request.state == 'open' && github.event.repository.fork == false
     runs-on: ubuntu-latest
     timeout-minutes: 2
     env:
