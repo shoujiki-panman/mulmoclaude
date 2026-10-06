@@ -423,6 +423,15 @@ Uma vez configurado, você pode colar qualquer URL de `x.com` ou `twitter.com` n
 
 O ícone de engrenagem na barra lateral abre um modal de Configurações onde você pode estender o conjunto de ferramentas do Claude sem editar código. As alterações são aplicadas na próxima mensagem (sem necessidade de reiniciar o servidor).
 
+### Abas Personalidade e Regras
+
+O grupo **Assistente**, no topo das Configurações, define como o MulmoClaude se comporta em todos os papéis: a versão gráfica de um `CLAUDE.md` e das regras do Claude Code.
+
+- **Personalidade** — um preset de estilo e tom, quatro características (acolhimento, entusiasmo, títulos e listas, emojis; cada uma com um clique entre *menos* / *padrão* / *mais*) e **instruções personalizadas** em texto livre enviadas em toda conversa.
+- **Regras** — as regras embutidas sobre quando o MulmoClaude age por conta própria e quando pergunta antes (em *Regras padrão*), suas próprias regras *perguntar antes* / *sem perguntar* / *nunca* e as permissões por plugin. Um plugin ou servidor MCP definido como *Nunca* é removido de todos os chats; as regras escritas são uma orientação que o MulmoClaude tenta seguir.
+
+Os dois ficam salvos como arquivos comuns (`config/personality.json`, `config/rules.json`) e valem a partir da próxima mensagem. Você também pode pedir no chat: "adicione uma regra: perguntar antes de enviar qualquer e-mail".
+
 ### Aba Allowed Tools
 
 Cole os nomes das ferramentas, um por linha. Útil para servidores MCP integrados do Claude Code (Gmail, Google Calendar) após um handshake OAuth de uma única vez:

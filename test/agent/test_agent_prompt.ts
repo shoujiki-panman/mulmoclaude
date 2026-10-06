@@ -16,6 +16,7 @@ import {
 import { WORKSPACE_FILES } from "../../server/workspace/paths.js";
 import type { Role } from "../../src/config/roles.js";
 import type { MemorySnapshot } from "../../server/workspace/memory/snapshot.js";
+import { defaultPersonality } from "../../src/types/personality.js";
 
 // Default empty snapshot used by every test that doesn't write any
 // memory entries (= all of them today — only legacy memory.md is
@@ -390,6 +391,47 @@ describe("buildSystemPrompt", () => {
     });
     assert.ok(result.includes("## Plugin Instructions"));
     assert.ok(result.includes("mcp__mulmoclaude__spawnBackgroundChat"));
+  });
+
+  it("always includes the rules section, with the built-in defaults", () => {
+    const result = buildSystemPrompt({
+      role: makeRole(),
+      workspacePath: workspace,
+      useDocker: false,
+      memorySnapshot: EMPTY_ATOMIC_SNAPSHOT,
+    });
+    assert.ok(result.includes("## Rules — when to act and when to ask first"));
+    assert.ok(result.includes("### Defaults"));
+    assert.ok(!result.includes("## Personality"), "no personality section while nothing is configured");
+  });
+
+  it("places the personality and the user's rules right after the role prompt", () => {
+    const result = buildSystemPrompt({
+      role: makeRole({ prompt: "You are a chef." }),
+      workspacePath: workspace,
+      useDocker: false,
+      memorySnapshot: EMPTY_ATOMIC_SNAPSHOT,
+      personality: { ...defaultPersonality(), tone: "friendly", customInstructions: "Call me Shu." },
+      rules: { rules: [{ id: "r1", kind: "ask", text: "Ordering groceries", enabled: true }], plugins: {} },
+    });
+    const rolePos = result.indexOf("You are a chef.");
+    const personalityPos = result.indexOf("## Personality");
+    const rulesPos = result.indexOf("## Rules — when to act");
+    assert.ok(rolePos >= 0 && rolePos < personalityPos && personalityPos < rulesPos);
+    assert.ok(result.includes("Call me Shu."));
+    assert.ok(result.includes("- Ordering groceries"));
+    assert.ok(rulesPos < result.indexOf(`Workspace directory: ${workspace}`));
+  });
+
+  it("only names ask-first plugins the role can actually call", () => {
+    const result = buildSystemPrompt({
+      role: makeRole({ availablePlugins: ["openCanvas"] }),
+      workspacePath: workspace,
+      useDocker: false,
+      memorySnapshot: EMPTY_ATOMIC_SNAPSHOT,
+      rules: { rules: [], plugins: { openCanvas: "ask", presentChart: "ask" } },
+    });
+    assert.ok(result.includes("Ask first before calling: `mcp__mulmoclaude__openCanvas`."));
   });
 });
 

@@ -11,6 +11,9 @@ import { getCachedReferenceDirs, buildReferenceDirsPrompt } from "../workspace/r
 import { log } from "../system/logger/index.js";
 import { toLocalIsoDate } from "../utils/date.js";
 import { SYSTEM_PROMPT, TOPIC_MEMORY_MANAGEMENT, ATOMIC_MEMORY_MANAGEMENT, SANDBOX_TOOLS_HINT, JOURNAL_POINTER } from "../prompts/index.js";
+import { buildPersonalitySection, buildRulesSection } from "./assistantProfilePrompt.js";
+import type { Personality } from "../../src/types/personality.js";
+import { emptyRules, type AssistantRules } from "../../src/types/assistantRules.js";
 
 // `SYSTEM_PROMPT` keeps its public export surface (other modules may
 // import it); the rest are internal to this file. Literals now live
@@ -272,6 +275,12 @@ export interface SystemPromptParams {
    *  before invoking `buildSystemPrompt` so prompt assembly stays
    *  synchronous and side-effect-free for the memory section. */
   memorySnapshot: MemorySnapshot;
+  /** Settings → Personality, pre-loaded and normalised. Absent ⇒ no
+   *  personality section (same as an all-defaults personality). */
+  personality?: Personality | undefined;
+  /** Settings → Rules, pre-loaded and normalised. Absent ⇒ the built-in
+   *  default rules only. */
+  rules?: AssistantRules | undefined;
 }
 
 // Accept IANA-looking strings only. Anything else (including
@@ -347,11 +356,14 @@ interface NamedSection {
 const SYSTEM_PROMPT_WARN_THRESHOLD_CHARS = 20000;
 
 export function buildSystemPrompt(params: SystemPromptParams): string {
-  const { role, workspacePath, useDocker, userTimezone, memorySnapshot } = params;
+  const { role, workspacePath, useDocker, userTimezone, memorySnapshot, personality, rules } = params;
+  const activeToolNames = new Set(getActiveToolDescriptors(role).map((descriptor) => descriptor.name));
 
   const sections: NamedSection[] = [
     { name: "base", content: SYSTEM_PROMPT },
     { name: "role", content: role.prompt },
+    { name: "personality", content: personality ? buildPersonalitySection(personality) : null },
+    { name: "rules", content: buildRulesSection(rules ?? emptyRules(), activeToolNames) },
     { name: "workspace", content: `Workspace directory: ${workspacePath}` },
     { name: "time", content: buildTimeSection(new Date(), userTimezone) },
     { name: "memory", content: buildMemoryContext(memorySnapshot, workspacePath) },

@@ -73,6 +73,20 @@ const FULL_PREFIX = `mcp__${MCP_SERVER_ID}__`;
 const fullNameFor = (toolName: string): string => `${FULL_PREFIX}${toolName}`;
 const promptFor = (def: ToolDefinition): string | undefined => (hasStringProp(def, "prompt") ? def.prompt : undefined);
 
+/** Every tool name `getActiveToolDescriptors` gates by
+ *  `role.availablePlugins` — the set a role can grant and a "never"
+ *  permission in Settings → Rules can withhold. `alwaysActive` and
+ *  `internal` MCP tools are left out: no role setting reaches them.
+ *  Sorted and deduplicated. */
+export function listRoleGatedToolNames(): string[] {
+  const names = new Set<string>(PLUGIN_DEFS.map((def) => def.name));
+  for (const tool of mcpTools) {
+    if (tool.alwaysActive !== true && tool.internal !== true) names.add(tool.definition.name);
+  }
+  for (const plugin of getRuntimePlugins()) names.add(plugin.definition.name);
+  return [...names].sort();
+}
+
 export function getActiveToolDescriptors(role: Role): ActiveToolDescriptor[] {
   const allowed = new Set<string>(role.availablePlugins);
   const seen = new Set<string>();

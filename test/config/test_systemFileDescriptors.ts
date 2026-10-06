@@ -15,6 +15,12 @@ describe("descriptorForPath — exact matches", () => {
     assert.equal(desc?.editPolicy, "fragile-format");
   });
 
+  it("returns user-editable descriptors for the assistant personality and rules", () => {
+    assert.equal(descriptorForPath("config/personality.json")?.id, "personality");
+    assert.equal(descriptorForPath("config/rules.json")?.id, "rules");
+    assert.equal(descriptorForPath("config/rules.json")?.editPolicy, "user-editable");
+  });
+
   it("returns the memory descriptor for conversations/memory.md", () => {
     const desc = descriptorForPath("conversations/memory.md");
     assert.equal(desc?.id, "memory");

@@ -12,7 +12,7 @@ MulmoClaude は内部で Claude Code (Claude Agent SDK) を呼び出すアプリ
 | Claude Code の資産 | MulmoClaude での扱い | アクション |
 |---|---|---|
 | `~/.claude/skills/<name>/SKILL.md` (user skills) | **そのまま読まれる** (read-only) | 何もしなくて良い |
-| `~/.claude/CLAUDE.md` (global instructions) | **読まれない** | 必要分を MulmoClaude の role / settings に移植 |
+| `~/.claude/CLAUDE.md` (global instructions) | **読まれない** | 自分についての指示は **設定 → 性格 → カスタム指示**、「勝手にやっていい / 先に聞いて / やらないで」は **設定 → ルール** に移植。役割固有の指示は role へ |
 | プロジェクト `CLAUDE.md` | **読まれない** | 同上、あるいは reference dirs から参照 |
 | `~/.claude/settings.json` (Claude Code 設定) | **Claude CLI 起動経路でそのまま読まれる** | アプリレベルの MulmoClaude 設定は別ファイル: `~/mulmoclaude/config/settings.json` |
 | `~/.claude/.mcp.json` / プロジェクト `.mcp.json` | **読まれない** | `~/mulmoclaude/config/mcp.json` にコピー |
@@ -340,19 +340,24 @@ cp -r ~/projects/my-project/docs/*.md ~/mulmoclaude/data/wiki/pages/
 
 | 内容 | MulmoClaude での移植先 |
 |---|---|
-| 言語設定 / 口調 / 一般的な指示 | UI 言語は `VITE_LOCALE` で明示固定可、未設定時は `navigator.languages` / `navigator.language` (= ブラウザ / OS) から自動判定 (`src/lib/vue-i18n.ts` `detectLocale`)、最終フォールバック `en` ; 口調 / 一般的な指示は role の `prompt` に書く (manageRoles) |
+| 言語設定 / 口調 / 一般的な指示 | UI 言語は `VITE_LOCALE` で明示固定可、未設定時は `navigator.languages` / `navigator.language` (= ブラウザ / OS) から自動判定 (`src/lib/vue-i18n.ts` `detectLocale`)、最終フォールバック `en` ; 口調は **設定 → 性格**（文体とトーン + 温かさ / 熱意 / 見出しとリスト / 絵文字）、全ロール共通の一般的な指示は同じ画面の **カスタム指示** に書く (`config/personality.json`) |
 | プロジェクト固有の文脈 / コーディング規約 | **新しい role** を作る (`manageRoles`) — その role の `prompt` に書く |
 | 「特定のファイルを参照」「特定ディレクトリを read」 | **reference dirs** (§4.3) で物理的にマウント |
-| 「このコマンドを使え」「このツールは使うな」 | role の `availablePlugins` でプラグインを絞る |
+| 「このコマンドを使え」「このツールは使うな」 | **設定 → ルール**: 「確認なしで / 確認してから / しない」の 3 種類の文章ルール（Claude Code の auto mode の `allow` / `soft_deny` / `hard_deny` 相当）と、プラグインの権限（許可 / 確認してから / 使わない — 「使わない」はツール自体を外すので確実に効く）。role ごとに絞るなら従来どおり `availablePlugins` |
 | Skill 的な手順 | **skill に変換** (§3) |
 
-### Claude Code が CLAUDE.md でやっていた system prompt 拡張は MulmoClaude にはない
+### CLAUDE.md 相当 = 設定 → 性格 / ルール
 
-MulmoClaude の system prompt は `server/agent/prompt.ts:683` の `buildSystemPrompt` で組み立てられる:
+MulmoClaude の system prompt は `server/agent/prompt.ts` の `buildSystemPrompt` で組み立てられる:
 
-- ベース ⊕ role.prompt ⊕ 各 plugin の prompt セクション ⊕ skill 一覧 ⊕ memory 抜粋 ⊕ workspace 概要
+- ベース ⊕ role.prompt ⊕ **性格 (カスタム指示を含む)** ⊕ **ルール** ⊕ workspace 概要 ⊕ memory 抜粋 ⊕ 各 plugin の prompt セクション
 
-ユーザが直接編集する経路は提供されていない (= role / skill / memory / settings の経由でのみ介入可能)。
+生の `CLAUDE.md` は読まないが、その役目は設定画面の 2 タブが担う:
+
+- **設定 → 性格** (`config/personality.json`): 文体とトーンのプリセット、4 つの特性（少なめ / デフォルト / 多め）、カスタム指示（全ロール共通のフリーテキスト）。すべてデフォルトのままなら system prompt には何も足さない。
+- **設定 → ルール** (`config/rules.json`): 組み込みのデフォルトルール（読む・作る・頼まれた編集は確認なし、削除・外部送信・課金・設定変更は先に確認、秘密情報の漏洩はしない）＋ 自分のルール ＋ プラグインの権限。文章ルールはモデルが守るよう努めるガイドで（Claude Code の auto mode ルールと同じく間違えることもある）、プラグインの「使わない」だけはツールを外すので確実に効く。
+
+どちらも毎ターン読み直すので再起動不要。チャットで「〜をルールに追加して」と頼めば、エージェントが `config/rules.json` を書き換える。
 
 ---
 

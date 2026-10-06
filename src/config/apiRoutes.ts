@@ -110,6 +110,13 @@ const HOST_API_ROUTES = {
     // Safe to call ad-hoc — pure side effect, no body.
     refresh: "/api/config/refresh",
     connectors: "/api/config/connectors",
+    // Settings → Personality / Rules. GET → the stored value (defaults
+    // when absent); PUT replaces it whole and echoes the normalised copy.
+    personality: "/api/config/personality",
+    rules: "/api/config/rules",
+    // GET → { plugins, mcpServers }: what Settings → Rules can set a
+    // permission on (role-gated tool names + user MCP server ids).
+    rulesCatalog: "/api/config/rules/catalog",
   },
 
   files: {

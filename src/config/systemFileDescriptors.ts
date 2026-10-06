@@ -6,6 +6,8 @@
 // (the actual text lives under `systemFiles.<id>` in src/lang/) so
 // all 8 locales stay in lockstep.
 
+import { WORKSPACE_FILES } from "./workspacePaths";
+
 export type EditPolicy = "agent-managed-but-hand-editable" | "user-editable" | "agent-managed" | "fragile-format" | "ephemeral";
 
 export interface SystemFileDescriptor {
@@ -46,6 +48,16 @@ export const SYSTEM_FILE_DESCRIPTORS: readonly Entry[] = [
     kind: "exact",
     path: "config/settings.json",
     descriptor: { id: "settings", schemaRef: "server/system/config.ts", editPolicy: "user-editable" },
+  },
+  {
+    kind: "exact",
+    path: WORKSPACE_FILES.personality,
+    descriptor: { id: "personality", schemaRef: "src/types/personality.ts", editPolicy: "user-editable" },
+  },
+  {
+    kind: "exact",
+    path: WORKSPACE_FILES.rules,
+    descriptor: { id: "rules", schemaRef: "src/types/assistantRules.ts", editPolicy: "user-editable" },
   },
   {
     kind: "exact",

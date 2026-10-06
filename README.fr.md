@@ -420,6 +420,15 @@ Une fois configuré, vous pouvez coller n'importe quelle URL `x.com` ou `twitter
 
 L'icône d'engrenage dans la barre latérale ouvre une modale Paramètres où vous pouvez étendre l'ensemble d'outils de Claude sans modifier de code. Les changements s'appliquent au message suivant (aucun redémarrage du serveur requis).
 
+### Onglets Personnalité et Règles
+
+Le groupe **Assistant**, en tête des Paramètres, règle le comportement de MulmoClaude dans tous les rôles — l'équivalent graphique d'un `CLAUDE.md` et des règles de Claude Code :
+
+- **Personnalité** — un préréglage de style et de ton, quatre traits (chaleur, enthousiasme, titres et listes, émojis ; chacun en un clic entre *moins* / *par défaut* / *plus*) et des **instructions personnalisées** en texte libre envoyées avec chaque conversation.
+- **Règles** — les règles intégrées indiquant quand MulmoClaude agit de lui-même et quand il demande d'abord (sous *Règles par défaut*), vos propres règles *demander d'abord* / *sans demander* / *jamais*, et les autorisations par plugin. Un plugin ou serveur MCP réglé sur *Jamais* est retiré de toutes les discussions ; les règles rédigées sont une consigne que MulmoClaude s'efforce de suivre.
+
+Les deux sont de simples fichiers (`config/personality.json`, `config/rules.json`) et s'appliquent dès le message suivant. Vous pouvez aussi le demander dans la discussion : « ajoute une règle : demander avant d'envoyer un e-mail ».
+
 ### Onglet Allowed Tools
 
 Collez les noms d'outils, un par ligne. Utile pour les serveurs MCP intégrés de Claude Code (Gmail, Google Calendar) après une poignée de main OAuth unique :

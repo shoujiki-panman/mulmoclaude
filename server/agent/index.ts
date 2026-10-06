@@ -14,6 +14,11 @@ import type { AgentEvent } from "./stream.js";
 import { log } from "../system/logger/index.js";
 import { getActiveBackend } from "./backend/index.js";
 import type { AgentInput, LLMBackend } from "./backend/index.js";
+import { readPersonality } from "../utils/files/personality-io.js";
+import { readRules } from "../utils/files/rules-io.js";
+import { withoutBlockedMcpServers, withoutBlockedPlugins } from "./pluginPermissions.js";
+import type { Personality } from "../../src/types/personality.js";
+import type { AssistantRules } from "../../src/types/assistantRules.js";
 
 export interface RunAgentOptions {
   message: string;
@@ -38,13 +43,18 @@ export interface RunAgentInput {
   userTimezone?: string | undefined;
 }
 
-export async function* runAgent(input: RunAgentInput): AsyncGenerator<AgentEvent> {
+export async function* runAgent(rawInput: RunAgentInput): AsyncGenerator<AgentEvent> {
+  // Settings → Personality / Rules, read per invocation like the rest of
+  // the settings. Plugins / MCP servers set to "never" are dropped here,
+  // before anything derives the tool set from the role or the MCP config.
+  const profile = await loadAssistantProfile(rawInput.workspacePath);
+  const input: RunAgentInput = { ...rawInput, role: withoutBlockedPlugins(rawInput.role, profile.rules.plugins) };
   const { role, workspacePath } = input;
   const activePlugins = getActivePlugins(role);
   const useDocker = await isDockerAvailable();
 
   // Per-invocation read so Settings UI changes apply without a server restart.
-  const userMcpRaw = loadMcpConfig().mcpServers;
+  const userMcpRaw = withoutBlockedMcpServers(loadMcpConfig().mcpServers, profile.rules.plugins);
   // `prepareUserServers` may spawn host-side stdio→HTTP gateways for
   // opted-in servers (#1421 Phase B); `mcpShims` MUST be torn down
   // in the finally below or host processes / ports leak.
@@ -56,7 +66,7 @@ export async function* runAgent(input: RunAgentInput): AsyncGenerator<AgentEvent
   // tears them down — otherwise host processes / ports leak for the
   // rest of the session.
   try {
-    const prepared = await prepareAgentRun(input, { activePlugins, useDocker, userServers });
+    const prepared = await prepareAgentRun(input, { activePlugins, useDocker, userServers, profile });
     try {
       yield* prepared.backend.runAgent(prepared.agentInput);
     } finally {
@@ -78,10 +88,21 @@ export async function* runAgent(input: RunAgentInput): AsyncGenerator<AgentEvent
   }
 }
 
+interface AssistantProfile {
+  personality: Personality;
+  rules: AssistantRules;
+}
+
+async function loadAssistantProfile(workspacePath: string): Promise<AssistantProfile> {
+  const [personality, rules] = await Promise.all([readPersonality(workspacePath), readRules(workspacePath)]);
+  return { personality, rules };
+}
+
 interface AgentRunDeps {
   activePlugins: string[];
   useDocker: boolean;
   userServers: Awaited<ReturnType<typeof prepareUserServers>>["servers"];
+  profile: AssistantProfile;
 }
 
 type McpPaths = ReturnType<typeof resolveMcpConfigPaths>;
@@ -112,7 +133,7 @@ async function prepareAgentRun(input: RunAgentInput, deps: AgentRunDeps): Promis
     await refreshCredentials();
   }
 
-  const systemPrompt = await buildFullSystemPrompt(input, useDocker);
+  const systemPrompt = await buildFullSystemPrompt(input, useDocker, deps.profile);
   const { mcpPaths, mcpServerNames } = await writeMcpConfig(input, deps, hasMcp);
   const { backend, agentInput } = buildAgentInput(input, deps, { systemPrompt, hasMcp, mcpPaths, mcpServerNames });
   return { backend, agentInput, hasMcp, hostMcpPath: mcpPaths.hostPath };
@@ -121,7 +142,7 @@ async function prepareAgentRun(input: RunAgentInput, deps: AgentRunDeps): Promis
 // Load the memory snapshot and assemble the full system prompt for
 // this turn, dumping it to the log on the first message of a --debug
 // session.
-async function buildFullSystemPrompt(input: RunAgentInput, useDocker: boolean): Promise<string> {
+async function buildFullSystemPrompt(input: RunAgentInput, useDocker: boolean, profile: AssistantProfile): Promise<string> {
   const { role, workspacePath, claudeSessionId, userTimezone } = input;
 
   // Pre-load memory once (atomic vs topic format chosen inside
@@ -133,6 +154,8 @@ async function buildFullSystemPrompt(input: RunAgentInput, useDocker: boolean): 
     useDocker,
     userTimezone,
     memorySnapshot,
+    personality: profile.personality,
+    rules: profile.rules,
   });
 
   // --debug: dump the full system prompt on the first message of each session.

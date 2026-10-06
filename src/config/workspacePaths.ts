@@ -57,4 +57,13 @@ export const WORKSPACE_FILES = {
    *  `{ "frame-src": ["https://www.google.com"], ... }`. Absent ⇒ base policy
    *  only. Widening CSP is a supply-chain / exfiltration surface — see #1989. */
   csp: "config/csp.json",
+  /** Assistant personality (Settings → Personality): tone preset,
+   *  characteristics and custom instructions, folded into every system
+   *  prompt. Shape: `Personality` in `src/types/personality.ts`. Absent ⇒
+   *  all defaults, which add nothing to the prompt. */
+  personality: "config/personality.json",
+  /** Assistant rules (Settings → Rules): the user's ask / allow / never
+   *  rules plus per-plugin permissions. Shape: `AssistantRules` in
+   *  `src/types/assistantRules.ts`. Absent ⇒ only the built-in defaults. */
+  rules: "config/rules.json",
 } as const;

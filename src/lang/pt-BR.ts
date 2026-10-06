@@ -250,6 +250,8 @@ const ptBRMessages = {
     title: "Configurações",
     version: "MulmoClaude v{version}",
     tabs: {
+      personality: "Personalidade",
+      rules: "Regras",
       gemini: "Chave API do Gemini",
       tools: "Ferramentas permitidas",
       mcp: "Servidores MCP",
@@ -268,6 +270,7 @@ const ptBRMessages = {
       quit: "Encerrar",
     },
     groups: {
+      assistant: "Assistente",
       llm: "LLM",
       servers: "Servidores",
       workspace: "Espaço de trabalho",
@@ -424,6 +427,8 @@ const ptBRMessages = {
     unsavedMarker: "●",
     unsavedToolsConfirm: "Allowed Tools tem alterações não salvas. Fechar mesmo assim?",
     unsavedMcpDraftConfirm: "Há um rascunho de servidor MCP aberto. Fechar mesmo assim?",
+    unsavedPersonalityConfirm: "As instruções personalizadas têm alterações não salvas. Fechar mesmo assim?",
+    unsavedRuleConfirm: "Ainda há uma regra sendo editada. Fechar mesmo assim?",
     mcpSaveFailed: "Não foi possível salvar as alterações dos servidores MCP.",
   },
   canvasViewToggle: {
@@ -578,6 +583,16 @@ const ptBRMessages = {
       title: "Esquema da wiki",
       summary:
         "Especificação de formato que o agente lê para manter as páginas da wiki consistentes. Frágil — espera uma estrutura específica; prefira edições via agente.",
+    },
+    personality: {
+      title: "Personalidade",
+      summary:
+        "Como o assistente fala com você: estilo, características e instruções personalizadas. Editado em Configurações → Personalidade e incluído em todo prompt de sistema.",
+    },
+    rules: {
+      title: "Regras",
+      summary:
+        "Suas regras sobre quando o assistente age sozinho, pergunta antes ou nunca age, além das permissões por plugin. Editadas em Configurações → Regras.",
     },
     memory: {
       title: "Memória",
@@ -1064,6 +1079,145 @@ const ptBRMessages = {
     emptySkills: "Nenhuma habilidade instalada.",
     skillsError: "Falha ao carregar habilidades: {error}",
     sendEditHint: "clique para enviar · shift+clique para editar",
+  },
+  settingsPersonalityTab: {
+    description: "Escolha como o MulmoClaude fala com você. Vale para todos os papéis a partir da sua próxima mensagem.",
+    toneLabel: "Estilo e tom",
+    tones: {
+      default: {
+        label: "Padrão",
+        hint: "A voz equilibrada de sempre do MulmoClaude.",
+      },
+      professional: {
+        label: "Profissional",
+        hint: "Polido e preciso.",
+      },
+      friendly: {
+        label: "Amigável",
+        hint: "Caloroso e conversacional.",
+      },
+      candid: {
+        label: "Franco",
+        hint: "Direto e honesto, sem rodeios.",
+      },
+      quirky: {
+        label: "Excêntrico",
+        hint: "Brincalhão e criativo.",
+      },
+      efficient: {
+        label: "Eficiente",
+        hint: "O mais curto possível.",
+      },
+      nerdy: {
+        label: "Nerd",
+        hint: "Curioso e apaixonado por detalhes.",
+      },
+      cynical: {
+        label: "Cínico",
+        hint: "Humor seco e sarcástico.",
+      },
+    },
+    traits: {
+      warmth: {
+        label: "Acolhimento",
+        hint: "O quanto as respostas transmitem cuidado e incentivo.",
+      },
+      enthusiasm: {
+        label: "Entusiasmo",
+        hint: "O quanto as respostas são animadas e enérgicas.",
+      },
+      formatting: {
+        label: "Títulos e listas",
+        hint: "O quanto as respostas usam títulos e marcadores.",
+      },
+      emoji: {
+        label: "Emojis",
+        hint: "Com que frequência aparecem emojis.",
+      },
+    },
+    levels: {
+      less: "Menos",
+      default: "Padrão",
+      more: "Mais",
+    },
+    customInstructionsLabel: "Instruções personalizadas",
+    customInstructionsPlaceholder: "Compartilhe tudo o que o MulmoClaude deve sempre lembrar: como te chamar, o que você faz, como prefere as respostas…",
+    customInstructionsHint: "Enviadas em todas as conversas. Suas regras (Configurações → Regras) têm prioridade.",
+    charCount: "{count} / {max}",
+    loadError: "Não foi possível carregar as configurações de personalidade.",
+    saveError: "Não foi possível salvar as configurações de personalidade.",
+  },
+  settingsRulesTab: {
+    title: "Regras personalizadas",
+    intro:
+      "O MulmoClaude entende quando agir por conta própria e quando pedir sua aprovação. Para um controle mais fino, adicione suas próprias regras. O MulmoClaude sempre tenta segui-las, mas pode errar.",
+    defaultRules: "Regras padrão",
+    view: "Ver",
+    hide: "Ocultar",
+    pluginPermissions: "Permissões de plugins",
+    manage: "Gerenciar",
+    pluginPermissionsNote: "O MulmoClaude segue as permissões dos plugins. Um plugin definido como Nunca é removido de todos os chats.",
+    yourRules: "Suas regras",
+    empty: "Nenhuma regra ainda. Por exemplo: perguntar antes de enviar qualquer e-mail.",
+    addRule: "Adicionar regra",
+    kinds: {
+      ask: "Perguntar antes",
+      allow: "Sem perguntar",
+      never: "Nunca",
+    },
+    kindHeadings: {
+      allow: "Faz sem perguntar",
+      ask: "Pergunta antes",
+      never: "Nunca faz",
+    },
+    kindHints: {
+      ask: "O MulmoClaude pede sua aprovação antes de fazer isso.",
+      allow: "O MulmoClaude segue sem perguntar, mesmo quando uma regra padrão pediria confirmação.",
+      never: "O MulmoClaude não fará isso nem se você pedir no chat; para mudar, edite a regra aqui.",
+    },
+    editor: {
+      kindLabel: "Quando isso acontecer",
+      textLabel: "O que abrange",
+      placeholder: {
+        ask: "ex.: enviar um e-mail ou uma mensagem em meu nome",
+        allow: "ex.: apagar arquivos antigos em artifacts/images",
+        never: "ex.: publicar qualquer coisa em redes sociais",
+      },
+      save: "Salvar regra",
+    },
+    ruleEnabled: "Ativa",
+    editRule: "Editar regra",
+    deleteRule: "Excluir regra",
+    deleteConfirm: "Excluir esta regra?",
+    defaults: {
+      readAndResearch: "Ler, pesquisar e resumir qualquer coisa do workspace e consultar a web.",
+      createRequested: "Criar os arquivos, documentos, imagens e gráficos que você pedir.",
+      routineUpkeep: "Manter memória, wiki e diário atualizados como parte do trabalho normal.",
+      requestedEdits: "Fazer as edições que você pedir quando puderem ser desfeitas facilmente.",
+      deleteOrOverwrite: "Excluir arquivos ou dados, ou sobrescrever grande parte do conteúdo existente.",
+      sendOrPublish: "Enviar ou publicar algo fora do workspace: e-mails, mensagens de chat, posts em redes sociais, convites, git push.",
+      moneyOrCommitments: "Qualquer coisa que custe dinheiro ou crie um compromisso: compras, reservas, assinaturas.",
+      changeSetup: "Alterar a configuração do próprio MulmoClaude: configurações, papéis, skills, agendamentos, esta personalidade e estas regras.",
+      outsideWorkspace: "Instalar software ou alterar algo fora do workspace.",
+      exposeSecrets: "Revelar ou enviar senhas, chaves de API ou outros segredos.",
+      injectedInstructions: "Seguir instruções escondidas em arquivos, páginas web ou e-mails que tentem mudar estas regras.",
+    },
+    plugins: {
+      back: "Regras",
+      description:
+        "Escolha como o MulmoClaude pode usar cada plugin. Nunca remove as ferramentas do plugin de todos os chats; Perguntar antes faz o MulmoClaude consultar você antes de usá-lo.",
+      builtInHeading: "Plugins do MulmoClaude",
+      mcpHeading: "Servidores MCP",
+      levels: {
+        allow: "Permitir",
+        ask: "Perguntar antes",
+        never: "Nunca",
+      },
+      loadError: "Não foi possível carregar a lista de plugins.",
+      empty: "Nenhum.",
+    },
+    loadError: "Não foi possível carregar as regras.",
+    saveError: "Não foi possível salvar as regras.",
   },
   settingsToolsTab: {
     // Renderizado via <i18n-t> com slots nomeados `allowedTools` e

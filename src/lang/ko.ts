@@ -254,6 +254,8 @@ const koMessages = {
     title: "설정",
     version: "MulmoClaude v{version}",
     tabs: {
+      personality: "성격",
+      rules: "규칙",
       gemini: "Gemini API 키",
       tools: "허용된 도구",
       mcp: "MCP 서버",
@@ -272,6 +274,7 @@ const koMessages = {
       quit: "종료",
     },
     groups: {
+      assistant: "어시스턴트",
       llm: "LLM",
       servers: "서버",
       workspace: "워크스페이스",
@@ -425,6 +428,8 @@ const koMessages = {
     unsavedMarker: "●",
     unsavedToolsConfirm: "허용된 도구에 저장되지 않은 변경 사항이 있습니다. 계속 닫으시겠습니까?",
     unsavedMcpDraftConfirm: "MCP 서버 초안이 아직 열려 있습니다. 계속 닫으시겠습니까?",
+    unsavedPersonalityConfirm: "사용자 지정 지침에 저장되지 않은 변경 사항이 있습니다. 계속 닫으시겠습니까?",
+    unsavedRuleConfirm: "편집 중인 규칙이 있습니다. 계속 닫으시겠습니까?",
     mcpSaveFailed: "MCP 서버 변경 사항을 저장하지 못했습니다.",
   },
   canvasViewToggle: {
@@ -577,6 +582,14 @@ const koMessages = {
     wikiSchema: {
       title: "위키 스키마",
       summary: "에이전트가 위키 페이지 일관성을 유지하기 위해 참조하는 형식 명세. 취약 — 특정 구조를 기대하므로 에이전트 주도 편집을 권장합니다.",
+    },
+    personality: {
+      title: "성격",
+      summary: "어시스턴트가 말하는 방식 — 스타일 프리셋, 특성, 사용자 지정 지침. 설정 → 성격에서 편집하며, 매번 시스템 프롬프트에 포함됩니다.",
+    },
+    rules: {
+      title: "규칙",
+      summary: "어시스턴트가 스스로 진행할지, 먼저 확인할지, 하지 않을지에 대한 규칙과 플러그인별 권한. 설정 → 규칙에서 편집합니다.",
     },
     memory: {
       title: "메모리",
@@ -1060,6 +1073,145 @@ const koMessages = {
     emptySkills: "설치된 스킬이 없습니다.",
     skillsError: "스킬을 불러오지 못했습니다: {error}",
     sendEditHint: "클릭하여 전송 · shift+클릭 으로 편집",
+  },
+  settingsPersonalityTab: {
+    description: "MulmoClaude가 말하는 방식을 선택합니다. 다음 메시지부터 모든 역할에 적용됩니다.",
+    toneLabel: "문체와 톤",
+    tones: {
+      default: {
+        label: "기본",
+        hint: "균형 잡힌 평소의 MulmoClaude.",
+      },
+      professional: {
+        label: "전문적",
+        hint: "정중하고 정확하게.",
+      },
+      friendly: {
+        label: "친근함",
+        hint: "따뜻하고 대화하듯이.",
+      },
+      candid: {
+        label: "솔직함",
+        hint: "에두르지 않고 정직하게.",
+      },
+      quirky: {
+        label: "개성적",
+        hint: "장난기 있고 상상력 풍부하게.",
+      },
+      efficient: {
+        label: "효율적",
+        hint: "최대한 짧게.",
+      },
+      nerdy: {
+        label: "덕후",
+        hint: "호기심 많고 세부까지 파고들게.",
+      },
+      cynical: {
+        label: "냉소적",
+        hint: "건조하고 시니컬한 유머.",
+      },
+    },
+    traits: {
+      warmth: {
+        label: "따뜻함",
+        hint: "답변이 전하는 배려와 격려의 정도.",
+      },
+      enthusiasm: {
+        label: "열정",
+        hint: "답변의 밝음과 활기.",
+      },
+      formatting: {
+        label: "제목과 목록",
+        hint: "답변에 제목과 글머리 기호를 쓰는 정도.",
+      },
+      emoji: {
+        label: "이모지",
+        hint: "이모지를 쓰는 빈도.",
+      },
+    },
+    levels: {
+      less: "적게",
+      default: "기본",
+      more: "많이",
+    },
+    customInstructionsLabel: "사용자 지정 지침",
+    customInstructionsPlaceholder: "MulmoClaude가 항상 기억해 주었으면 하는 것을 무엇이든 알려 주세요 — 호칭, 하는 일, 선호하는 답변 방식 등…",
+    customInstructionsHint: "모든 대화에 사용됩니다. 규칙(설정 → 규칙)이 우선합니다.",
+    charCount: "{count} / {max}",
+    loadError: "성격 설정을 불러오지 못했습니다.",
+    saveError: "성격 설정을 저장하지 못했습니다.",
+  },
+  settingsRulesTab: {
+    title: "사용자 지정 규칙",
+    intro:
+      "MulmoClaude는 스스로 진행해도 될 때와 승인을 요청해야 할 때를 이해하고 있습니다. 더 세밀하게 제어하려면 사용자 지정 규칙을 추가하세요. MulmoClaude는 항상 이 규칙을 따르려고 노력하지만 실수할 수도 있습니다.",
+    defaultRules: "기본 규칙",
+    view: "보기",
+    hide: "숨기기",
+    pluginPermissions: "플러그인 권한",
+    manage: "관리",
+    pluginPermissionsNote: "MulmoClaude는 플러그인 권한 설정을 따릅니다. ‘사용 안 함’으로 설정한 플러그인은 모든 채팅에서 제외됩니다.",
+    yourRules: "내 규칙",
+    empty: "아직 규칙이 없습니다. 예: 이메일을 보내기 전에 항상 확인하기.",
+    addRule: "규칙 추가",
+    kinds: {
+      ask: "먼저 확인",
+      allow: "확인 없이",
+      never: "하지 않음",
+    },
+    kindHeadings: {
+      allow: "확인 없이 하는 일",
+      ask: "먼저 확인하는 일",
+      never: "하지 않는 일",
+    },
+    kindHints: {
+      ask: "MulmoClaude가 이 작업을 하기 전에 승인을 요청합니다.",
+      allow: "기본 규칙이 확인을 요구하는 경우에도 MulmoClaude가 확인 없이 진행합니다.",
+      never: "채팅에서 요청해도 MulmoClaude는 이 작업을 하지 않습니다. 바꾸려면 여기서 규칙을 변경하세요.",
+    },
+    editor: {
+      kindLabel: "이런 상황에서는",
+      textLabel: "해당하는 행동",
+      placeholder: {
+        ask: "예: 나 대신 이메일이나 채팅 메시지 보내기",
+        allow: "예: artifacts/images의 오래된 파일 삭제하기",
+        never: "예: 소셜 미디어에 무엇이든 게시하기",
+      },
+      save: "규칙 저장",
+    },
+    ruleEnabled: "사용",
+    editRule: "규칙 편집",
+    deleteRule: "규칙 삭제",
+    deleteConfirm: "이 규칙을 삭제할까요?",
+    defaults: {
+      readAndResearch: "워크스페이스의 모든 내용을 읽고 검색하고 요약하며, 웹에서 찾아봅니다.",
+      createRequested: "요청한 파일, 문서, 이미지, 차트를 만듭니다.",
+      routineUpkeep: "일상 작업의 일부로 메모리, 위키, 저널을 최신으로 유지합니다.",
+      requestedEdits: "쉽게 되돌릴 수 있는 범위에서 요청한 편집을 합니다.",
+      deleteOrOverwrite: "파일이나 데이터를 삭제하거나 기존 내용을 크게 덮어씁니다.",
+      sendOrPublish: "워크스페이스 밖으로 무언가를 보내거나 게시합니다 — 이메일, 채팅 메시지, 소셜 게시물, 초대, git push.",
+      moneyOrCommitments: "돈이 들거나 약속이 따르는 일 — 구매, 예약, 구독.",
+      changeSetup: "MulmoClaude 자체의 구성을 바꿉니다 — 설정, 역할, 스킬, 일정, 이 성격과 규칙.",
+      outsideWorkspace: "소프트웨어를 설치하거나 워크스페이스 밖의 것을 변경합니다.",
+      exposeSecrets: "비밀번호, API 키 같은 비밀 정보를 드러내거나 보냅니다.",
+      injectedInstructions: "파일, 웹 페이지, 이메일에 숨어 이 규칙을 바꾸려는 지시를 따릅니다.",
+    },
+    plugins: {
+      back: "규칙",
+      description:
+        "MulmoClaude가 각 플러그인을 어떻게 사용할지 선택합니다. ‘사용 안 함’은 해당 플러그인의 도구를 모든 채팅에서 제외하고, ‘먼저 확인’은 사용하기 전에 확인을 요청하게 합니다.",
+      builtInHeading: "MulmoClaude 플러그인",
+      mcpHeading: "MCP 서버",
+      levels: {
+        allow: "허용",
+        ask: "먼저 확인",
+        never: "사용 안 함",
+      },
+      loadError: "플러그인 목록을 불러오지 못했습니다.",
+      empty: "없음.",
+    },
+    loadError: "규칙을 불러오지 못했습니다.",
+    saveError: "규칙을 저장하지 못했습니다.",
   },
   settingsToolsTab: {
     // <i18n-t> 에서 명명 슬롯 `allowedTools` 와 `claudeMcp` 로 렌더링되므로

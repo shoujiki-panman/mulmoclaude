@@ -33,6 +33,11 @@ export interface McpTool {
    *  the per-role gate for these. Use only for generic host
    *  infrastructure that benefits every role. */
   alwaysActive?: boolean;
+  /** Host plumbing the CLI calls by itself (e.g. `handlePermission` via
+   *  `--permission-prompt-tool`) and never offers to the model. Kept
+   *  out of the plugin list in Settings → Rules, where a permission on
+   *  it would mean nothing. */
+  internal?: boolean;
   handler: (args: Record<string, unknown>, ctx?: McpToolContext) => Promise<string>;
 }
 

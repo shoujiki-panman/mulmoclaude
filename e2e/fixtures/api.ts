@@ -194,6 +194,20 @@ export async function mockAllApis(page: Page, opts: MockApiOptions = {}): Promis
     }),
   );
 
+  // Settings → Personality / Rules stay mounted while the modal is open,
+  // so every settings spec loads them. Defaults = nothing configured.
+  await page.route(urlEndsWith("/api/config/personality"), (route) =>
+    route.fulfill({
+      json: {
+        tone: "default",
+        traits: { warmth: "default", enthusiasm: "default", formatting: "default", emoji: "default" },
+        customInstructions: "",
+      },
+    }),
+  );
+  await page.route(urlEndsWith("/api/config/rules"), (route) => route.fulfill({ json: { rules: [], plugins: {} } }));
+  await page.route(urlEndsWith("/api/config/rules/catalog"), (route) => route.fulfill({ json: { plugins: [], mcpServers: [] } }));
+
   // Default agent mock — returns 202 (fire-and-forget). Tests that
   // need to deliver events should register their own route + WS mock
   // AFTER calling mockAllApis.

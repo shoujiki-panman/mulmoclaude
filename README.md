@@ -491,6 +491,15 @@ This is **disabled by default** and **macOS-only** (Apple Silicon recommended). 
 
 The gear icon in the sidebar opens a Settings modal where you can extend Claude's tool set without editing code. Changes apply on the next message (no server restart required).
 
+### Personality and Rules tabs
+
+The **Assistant** group at the top of Settings shapes how MulmoClaude behaves in every role — the GUI counterpart of a `CLAUDE.md` and of Claude Code's rules:
+
+- **Personality** — a style-and-tone preset, four characteristics (warmth, enthusiasm, headings and lists, emoji — one click each between *less* / *default* / *more*) and free-text **custom instructions** sent with every conversation.
+- **Rules** — the built-in rules for when MulmoClaude acts on its own and when it asks first (shown under *Default rules*), your own *ask first* / *without asking* / *never* rules, and per-plugin permissions. A plugin or MCP server set to *Never* is removed from every chat; the written rules are guidance MulmoClaude tries to follow.
+
+Both are plain files (`config/personality.json`, `config/rules.json`) and apply from the next message. You can also just ask in chat: "add a rule: ask before sending any email".
+
 ### Allowed Tools tab
 
 Paste tool names one per line. Useful for Claude Code's built-in MCP servers (Gmail, Google Calendar) after a one-time OAuth handshake:

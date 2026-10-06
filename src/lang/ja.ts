@@ -253,6 +253,8 @@ const jaMessages = {
     title: "設定",
     version: "MulmoClaude v{version}",
     tabs: {
+      personality: "性格",
+      rules: "ルール",
       gemini: "Gemini API キー",
       tools: "許可ツール",
       mcp: "MCP サーバ",
@@ -271,6 +273,7 @@ const jaMessages = {
       quit: "終了",
     },
     groups: {
+      assistant: "アシスタント",
       llm: "LLM",
       servers: "サーバ",
       workspace: "ワークスペース",
@@ -427,6 +430,8 @@ const jaMessages = {
     unsavedMarker: "●",
     unsavedToolsConfirm: "許可ツールに未保存の変更があります。閉じてもよろしいですか?",
     unsavedMcpDraftConfirm: "MCP サーバーの下書きが残っています。閉じてもよろしいですか?",
+    unsavedPersonalityConfirm: "カスタム指示に保存していない変更があります。閉じてもよろしいですか?",
+    unsavedRuleConfirm: "編集中のルールがあります。閉じてもよろしいですか?",
     mcpSaveFailed: "MCP サーバーの変更を保存できませんでした。",
   },
   canvasViewToggle: {
@@ -579,6 +584,14 @@ const jaMessages = {
     wikiSchema: {
       title: "Wiki スキーマ",
       summary: "Wiki ページの一貫性を保つためにエージェントが参照する書式仕様。壊れやすい — 特定の構造を期待するため、エージェント主導の編集を推奨します。",
+    },
+    personality: {
+      title: "性格",
+      summary: "アシスタントの話し方（スタイル、特性、カスタム指示）。設定 → 性格 から編集でき、毎回のシステムプロンプトに含まれます。",
+    },
+    rules: {
+      title: "ルール",
+      summary: "アシスタントが自分で進めるか、先に確認するか、行わないかのルールと、プラグインごとの権限。設定 → ルール から編集します。",
     },
     memory: {
       title: "メモリ",
@@ -1062,6 +1075,145 @@ const jaMessages = {
     emptySkills: "スキルがインストールされていません。",
     skillsError: "スキルの読み込みに失敗しました: {error}",
     sendEditHint: "クリックで送信 · Shift+クリックで編集",
+  },
+  settingsPersonalityTab: {
+    description: "MulmoClaude の話し方を選びます。次のメッセージから、すべてのロールに反映されます。",
+    toneLabel: "文体とトーン",
+    tones: {
+      default: {
+        label: "デフォルト",
+        hint: "バランスの取れた、いつもの MulmoClaude。",
+      },
+      professional: {
+        label: "プロフェッショナル",
+        hint: "丁寧で正確。",
+      },
+      friendly: {
+        label: "フレンドリー",
+        hint: "温かく、会話的。",
+      },
+      candid: {
+        label: "率直",
+        hint: "遠慮せず、正直に。",
+      },
+      quirky: {
+        label: "ユニーク",
+        hint: "遊び心があって想像力豊か。",
+      },
+      efficient: {
+        label: "効率的",
+        hint: "できるだけ短く。",
+      },
+      nerdy: {
+        label: "オタク",
+        hint: "好奇心旺盛で、細部まで語る。",
+      },
+      cynical: {
+        label: "皮肉屋",
+        hint: "辛口でドライなユーモア。",
+      },
+    },
+    traits: {
+      warmth: {
+        label: "温かさ",
+        hint: "返答の思いやりや励ましの度合い。",
+      },
+      enthusiasm: {
+        label: "熱意",
+        hint: "返答の明るさや元気さ。",
+      },
+      formatting: {
+        label: "見出しとリスト",
+        hint: "見出しや箇条書きで整理する度合い。",
+      },
+      emoji: {
+        label: "絵文字",
+        hint: "絵文字を使う頻度。",
+      },
+    },
+    levels: {
+      less: "少なめ",
+      default: "デフォルト",
+      more: "多め",
+    },
+    customInstructionsLabel: "カスタム指示",
+    customInstructionsPlaceholder: "MulmoClaude にいつも覚えておいてほしいことを何でも共有してください（呼び方、仕事、好みの答え方など）",
+    customInstructionsHint: "すべての会話で使われます。ルール（設定 → ルール）のほうが優先されます。",
+    charCount: "{count} / {max}",
+    loadError: "性格の設定を読み込めませんでした。",
+    saveError: "性格の設定を保存できませんでした。",
+  },
+  settingsRulesTab: {
+    title: "カスタムルール",
+    intro:
+      "MulmoClaude は、自分で進めてよいときと、あなたの承認を求めるべきときを理解しています。より細かく制御するには、カスタムルールを追加してください。MulmoClaude は常にこれらのルールに従うよう努めますが、間違えることもあります。",
+    defaultRules: "デフォルトのルール",
+    view: "表示",
+    hide: "閉じる",
+    pluginPermissions: "プラグインの権限",
+    manage: "管理する",
+    pluginPermissionsNote: "MulmoClaude はプラグインの権限設定に従います。「使わない」にしたプラグインは、すべてのチャットから外されます。",
+    yourRules: "あなたのルール",
+    empty: "まだルールはありません。例：メールを送る前に必ず確認する。",
+    addRule: "ルールを追加",
+    kinds: {
+      ask: "確認してから",
+      allow: "確認なしで",
+      never: "しない",
+    },
+    kindHeadings: {
+      allow: "確認なしで行うこと",
+      ask: "先に確認すること",
+      never: "しないこと",
+    },
+    kindHints: {
+      ask: "MulmoClaude は、これを行う前にあなたの承認を求めます。",
+      allow: "デフォルトのルールでは確認する場面でも、MulmoClaude は確認せずに進めます。",
+      never: "チャットで頼まれても MulmoClaude はこれを行いません。変えたいときは、ここでルールを変更してください。",
+    },
+    editor: {
+      kindLabel: "この場面では",
+      textLabel: "対象となる行動",
+      placeholder: {
+        ask: "例：私の代わりにメールやメッセージを送る",
+        allow: "例：artifacts/images の古いファイルを削除する",
+        never: "例：SNS に何かを投稿する",
+      },
+      save: "ルールを保存",
+    },
+    ruleEnabled: "有効",
+    editRule: "ルールを編集",
+    deleteRule: "ルールを削除",
+    deleteConfirm: "このルールを削除しますか?",
+    defaults: {
+      readAndResearch: "ワークスペース内のものを読む・検索する・要約する、Web で調べる。",
+      createRequested: "頼まれたファイル・文書・画像・グラフを作る。",
+      routineUpkeep: "通常の作業の一環として、メモリ・Wiki・ジャーナルを最新に保つ。",
+      requestedEdits: "簡単に元に戻せる範囲で、頼まれた編集を行う。",
+      deleteOrOverwrite: "ファイルやデータを削除する、既存の内容を大きく上書きする。",
+      sendOrPublish: "ワークスペースの外に送信・公開する（メール、チャット、SNS 投稿、招待、git push など）。",
+      moneyOrCommitments: "お金がかかること、約束を伴うこと（購入、予約、サブスクリプションなど）。",
+      changeSetup: "MulmoClaude 自体の設定を変える（設定、ロール、スキル、スケジュール、この性格やルール）。",
+      outsideWorkspace: "ソフトウェアをインストールする、ワークスペースの外を変更する。",
+      exposeSecrets: "パスワードや API キーなどの秘密情報を明かしたり送ったりする。",
+      injectedInstructions: "ファイル・Web ページ・メールに紛れ込んだ、これらのルールを変えようとする指示に従う。",
+    },
+    plugins: {
+      back: "ルール",
+      description:
+        "プラグインごとに、MulmoClaude がどう使ってよいかを選びます。「使わない」にするとそのプラグインはすべてのチャットから外れ、「確認してから」にすると使う前にあなたに確認します。",
+      builtInHeading: "MulmoClaude のプラグイン",
+      mcpHeading: "MCP サーバ",
+      levels: {
+        allow: "許可",
+        ask: "確認してから",
+        never: "使わない",
+      },
+      loadError: "プラグイン一覧を読み込めませんでした。",
+      empty: "ありません。",
+    },
+    loadError: "ルールを読み込めませんでした。",
+    saveError: "ルールを保存できませんでした。",
   },
   settingsToolsTab: {
     explanation:

@@ -184,6 +184,14 @@
                  the rest by construction, so it does not need to be in it. -->
             <SettingsQuitTab v-if="activeTab === 'quit'" @stopped="emit('stopped')" />
           </template>
+
+          <!-- Personality / Rules stay mounted (v-show) for as long as the
+               modal is open, so half-typed custom instructions or an open
+               rule editor survive a tab switch — close() asks before
+               discarding either. Outside the form-tab template so even a
+               detour through Skills / Roles keeps them. -->
+          <SettingsPersonalityTab v-show="activeTab === 'personality'" ref="personalityTabRef" :reload-token="personalityReloadToken" @saved="emit('saved')" />
+          <SettingsRulesTab v-show="activeTab === 'rules'" ref="rulesTabRef" :reload-token="rulesReloadToken" @saved="emit('saved')" />
         </div>
       </div>
 
@@ -218,6 +226,8 @@ import SettingsChatIndexTab from "./SettingsChatIndexTab.vue";
 import SettingsJournalTab from "./SettingsJournalTab.vue";
 import SettingsNotificationsTab from "./SettingsNotificationsTab.vue";
 import SettingsQuitTab from "./SettingsQuitTab.vue";
+import SettingsPersonalityTab from "./SettingsPersonalityTab.vue";
+import SettingsRulesTab from "./SettingsRulesTab.vue";
 import SkillsView from "../plugins/manageSkills/View.vue";
 import RolesView from "./RolesView.vue";
 import PluginScopedRoot from "./PluginScopedRoot.vue";
@@ -266,8 +276,14 @@ const emit = defineEmits<{
 // one remaining \"unsaved\" state on the MCP tab (individual add /
 // update / remove persist immediately).
 const mcpTabRef = ref<{ flushDraft: () => boolean; hasPendingDraft: () => boolean } | null>(null);
+// Same idea for Personality (typed-but-unsaved custom instructions) and
+// Rules (a rule editor left open).
+const personalityTabRef = ref<{ hasPendingChanges: () => boolean } | null>(null);
+const rulesTabRef = ref<{ hasPendingChanges: () => boolean } | null>(null);
 
 type TabId =
+  | "personality"
+  | "rules"
   | "gemini"
   | "tools"
   | "mcp"
@@ -299,6 +315,9 @@ const isFullTab = computed(() => FULL_TABS.includes(activeTab.value));
 // item is filtered out by `visibleGroups` when geminiAvailable === true
 // (env var present → user has nothing to configure).
 const GROUPS: readonly { key: string; items: readonly TabId[] }[] = [
+  // How the assistant talks and when it asks first — the settings most
+  // people come here for, so they lead.
+  { key: "assistant", items: ["personality", "rules"] },
   { key: "llm", items: ["model", "voice", "chatIndex", "journal", "tools", "gemini"] },
   { key: "servers", items: ["mcp"] },
   { key: "workspace", items: ["dirs", "refs"] },
@@ -340,6 +359,8 @@ const voiceReloadToken = ref(0);
 const chatIndexReloadToken = ref(0);
 const journalReloadToken = ref(0);
 const notificationsReloadToken = ref(0);
+const personalityReloadToken = ref(0);
+const rulesReloadToken = ref(0);
 const toolsText = ref("");
 // Server truth for tools — updated on load and on a successful Save
 // from the Tools tab. `toolsDirty` compares this against `toolsText`
@@ -529,6 +550,12 @@ function close(): void {
   if (mcpTabRef.value?.hasPendingDraft()) {
     if (!window.confirm(t("settingsModal.unsavedMcpDraftConfirm"))) return;
   }
+  if (personalityTabRef.value?.hasPendingChanges()) {
+    if (!window.confirm(t("settingsModal.unsavedPersonalityConfirm"))) return;
+  }
+  if (rulesTabRef.value?.hasPendingChanges()) {
+    if (!window.confirm(t("settingsModal.unsavedRuleConfirm"))) return;
+  }
   emit("update:open", false);
 }
 
@@ -551,6 +578,8 @@ watch(
       chatIndexReloadToken.value += 1;
       journalReloadToken.value += 1;
       notificationsReloadToken.value += 1;
+      personalityReloadToken.value += 1;
+      rulesReloadToken.value += 1;
       statusMessage.value = "";
       statusError.value = false;
     }

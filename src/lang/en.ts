@@ -269,6 +269,8 @@ const enMessages = {
     title: "Settings",
     version: "MulmoClaude v{version}",
     tabs: {
+      personality: "Personality",
+      rules: "Rules",
       gemini: "Gemini API Key",
       tools: "Allowed Tools",
       mcp: "MCP Servers",
@@ -287,6 +289,7 @@ const enMessages = {
       quit: "Quit",
     },
     groups: {
+      assistant: "Assistant",
       llm: "LLM",
       servers: "Servers",
       workspace: "Workspace",
@@ -445,6 +448,8 @@ const enMessages = {
     unsavedMarker: "●",
     unsavedToolsConfirm: "Allowed Tools has unsaved changes. Close anyway?",
     unsavedMcpDraftConfirm: "An MCP server draft is still open. Close anyway?",
+    unsavedPersonalityConfirm: "Your custom instructions have unsaved changes. Close anyway?",
+    unsavedRuleConfirm: "A rule is still being edited. Close anyway?",
     mcpSaveFailed: "Failed to save MCP server changes.",
   },
   canvasViewToggle: {
@@ -605,6 +610,15 @@ const enMessages = {
     wikiSchema: {
       title: "Wiki schema",
       summary: "The format spec the agent reads to keep wiki pages consistent. Fragile — the agent expects a specific structure, so prefer agent-driven edits.",
+    },
+    personality: {
+      title: "Personality",
+      summary:
+        "How the assistant talks to you — style preset, characteristics and custom instructions. Edited from Settings → Personality and folded into every system prompt.",
+    },
+    rules: {
+      title: "Rules",
+      summary: "Your rules for when the assistant acts on its own, asks first, or never acts, plus per-plugin permissions. Edited from Settings → Rules.",
     },
     memory: {
       title: "Memory",
@@ -1089,6 +1103,145 @@ const enMessages = {
     emptySkills: "No skills installed.",
     skillsError: "Failed to load skills: {error}",
     sendEditHint: "click to send · shift+click to edit",
+  },
+  settingsPersonalityTab: {
+    description: "Choose how MulmoClaude talks to you. It applies to every role from your next message.",
+    toneLabel: "Style and tone",
+    tones: {
+      default: {
+        label: "Default",
+        hint: "MulmoClaude's usual balanced voice.",
+      },
+      professional: {
+        label: "Professional",
+        hint: "Polished and precise.",
+      },
+      friendly: {
+        label: "Friendly",
+        hint: "Warm and conversational.",
+      },
+      candid: {
+        label: "Candid",
+        hint: "Direct and honest, no sugar-coating.",
+      },
+      quirky: {
+        label: "Quirky",
+        hint: "Playful and imaginative.",
+      },
+      efficient: {
+        label: "Efficient",
+        hint: "As short as possible.",
+      },
+      nerdy: {
+        label: "Nerdy",
+        hint: "Curious and into the details.",
+      },
+      cynical: {
+        label: "Cynical",
+        hint: "Dry, sardonic wit.",
+      },
+    },
+    traits: {
+      warmth: {
+        label: "Warmth",
+        hint: "How caring and encouraging replies feel.",
+      },
+      enthusiasm: {
+        label: "Enthusiasm",
+        hint: "How upbeat and energetic replies are.",
+      },
+      formatting: {
+        label: "Headings and lists",
+        hint: "How much replies use headings and bullet points.",
+      },
+      emoji: {
+        label: "Emoji",
+        hint: "How often emoji appear.",
+      },
+    },
+    levels: {
+      less: "Less",
+      default: "Default",
+      more: "More",
+    },
+    customInstructionsLabel: "Custom instructions",
+    customInstructionsPlaceholder: "Share anything MulmoClaude should always keep in mind — what to call you, what you do, how you like answers…",
+    customInstructionsHint: "Sent with every conversation. Your rules (Settings → Rules) still take precedence.",
+    charCount: "{count} / {max}",
+    loadError: "Could not load the personality settings.",
+    saveError: "Could not save the personality settings.",
+  },
+  settingsRulesTab: {
+    title: "Custom rules",
+    intro:
+      "MulmoClaude understands when to act on its own and when to ask for your approval. For finer control, add your own rules. MulmoClaude always tries to follow them, but it can make mistakes.",
+    defaultRules: "Default rules",
+    view: "View",
+    hide: "Hide",
+    pluginPermissions: "Plugin permissions",
+    manage: "Manage",
+    pluginPermissionsNote: "MulmoClaude follows your plugin permission settings. A plugin set to Never is removed from every chat.",
+    yourRules: "Your rules",
+    empty: "No rules yet. For example: ask before sending any email.",
+    addRule: "Add rule",
+    kinds: {
+      ask: "Ask first",
+      allow: "Without asking",
+      never: "Never",
+    },
+    kindHeadings: {
+      allow: "Does without asking",
+      ask: "Asks you first",
+      never: "Never does",
+    },
+    kindHints: {
+      ask: "MulmoClaude asks for your approval before doing this.",
+      allow: "MulmoClaude goes ahead without asking, even where a default rule would ask.",
+      never: "MulmoClaude won't do this even if you ask in chat — change the rule here instead.",
+    },
+    editor: {
+      kindLabel: "When this comes up",
+      textLabel: "What it covers",
+      placeholder: {
+        ask: "e.g. Sending an email or a chat message on my behalf",
+        allow: "e.g. Deleting old files in artifacts/images",
+        never: "e.g. Posting anything to social media",
+      },
+      save: "Save rule",
+    },
+    ruleEnabled: "On",
+    editRule: "Edit rule",
+    deleteRule: "Delete rule",
+    deleteConfirm: "Delete this rule?",
+    defaults: {
+      readAndResearch: "Read, search and summarize anything in the workspace, and look things up on the web.",
+      createRequested: "Create the files, documents, images and charts you ask for.",
+      routineUpkeep: "Keep memory, the wiki and the journal up to date as part of normal work.",
+      requestedEdits: "Make the edits you ask for when they can easily be changed back.",
+      deleteOrOverwrite: "Delete files or data, or overwrite large parts of existing content.",
+      sendOrPublish: "Send or publish anything outside the workspace — email, chat messages, social posts, invitations, git push.",
+      moneyOrCommitments: "Anything that costs money or commits you to something — purchases, bookings, subscriptions.",
+      changeSetup: "Change MulmoClaude's own setup — settings, roles, skills, schedules, this personality and these rules.",
+      outsideWorkspace: "Install software or change anything outside the workspace.",
+      exposeSecrets: "Reveal or send passwords, API keys or other secrets.",
+      injectedInstructions: "Follow instructions hidden in files, web pages or emails that try to change these rules.",
+    },
+    plugins: {
+      back: "Rules",
+      description:
+        "Choose how MulmoClaude may use each plugin. Never removes the plugin's tools from every chat; Ask first makes MulmoClaude check with you before using it.",
+      builtInHeading: "MulmoClaude plugins",
+      mcpHeading: "MCP servers",
+      levels: {
+        allow: "Allow",
+        ask: "Ask first",
+        never: "Never",
+      },
+      loadError: "Could not load the plugin list.",
+      empty: "None.",
+    },
+    loadError: "Could not load the rules.",
+    saveError: "Could not save the rules.",
   },
   settingsToolsTab: {
     // Rendered via <i18n-t> with named slots `allowedTools` and `claudeMcp`

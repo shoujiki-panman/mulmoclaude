@@ -90,6 +90,7 @@ export const handlePermission: McpTool = {
   // Internal-only tool: don't surface it to the LLM via the
   // role's allowedTools / system prompt. The CLI calls it
   // directly through the `--permission-prompt-tool` flag.
+  internal: true,
 
   async handler(args: Record<string, unknown>, __ctx?: McpToolContext): Promise<string> {
     const toolName = typeof args.tool_name === "string" ? args.tool_name : "";

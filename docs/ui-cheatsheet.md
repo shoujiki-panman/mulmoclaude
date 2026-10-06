@@ -16,7 +16,7 @@ A quick visual reference so chat instructions about UI ("the bell at the top rig
 ┌─[App.vue root]────────────────────────────────────────────────────────┐
 │ ┌─[#header]────────────────────────────────────────────────────────┐  │
 │ │  ⌂[Go to latest chat / brand]  🔓lock_open  🔔[notification-bell]│  │
-│ │                          ⚙ settings (→ Skills / Roles tabs)      │  │
+│ │       ⚙ settings (→ Personality / Rules, … Skills / Roles tabs)  │  │
 │ └──────────────────────────────────────────────────────────────────┘  │
 │ ┌─<PluginLauncher> [plugin-launcher]──────────────────────────────────┐│
 │ │ [ 💬Chat 📖Wiki ▦Collections 📡Feeds 📁Files ⏰Actions (🐛Debug) ]  [ ⭐⭐ ] ││
@@ -311,6 +311,52 @@ The **Calendar** toggle (`[collection-view-toggle-calendar]`) appears only when 
 Schema-declared **custom views** (`schema.views[]`) each add a toggle button (`[collection-view-custom-<id>]`) after the built-ins; selecting one renders `<CollectionCustomView>` (`[collection-custom-view-iframe]`), an LLM-authored HTML file (`data/skills/<slug>/views/*.html`) in a `sandbox="allow-scripts"` iframe over the records. The view reaches its data only through a slug- and capability-scoped token injected as `window.__MC_VIEW` (GET/PUT `/api/collections/:slug/view-data`), never the global bearer; CSP limits its `fetch` to that endpoint. `window.__MC_VIEW.onChange(cb)` lets the view refresh live on record changes — `<CollectionCustomView>` subscribes to the `collection:<slug>` pub/sub channel and relays a `mc-collection-changed` postMessage into the iframe. The trailing **+** (`[collection-view-add]`, standalone page only) opens a target chooser (`[collection-view-add-menu]` → `[collection-view-add-desktop]` / `[collection-view-add-mobile]`) that seeds a chat asking Claude to author a new custom view — desktop (`config/helps/custom-view.md`) or phone/remote (`config/helps/custom-view-remote.md`, registered with `target: "mobile"`). On a host without remote-view support the **+** skips the menu and seeds the desktop prompt directly. The **gear** (`[collection-config-open]`, standalone page, shown only when the collection has at least one custom view it's allowed to delete — project non-preset or a feed, never a read-only user-scope skill) opens the per-collection config modal (`[collection-config-modal]`): a **Custom views** list where each row's delete button (`[collection-view-delete-<id>]`) calls `DELETE /api/collections/:slug/views/:viewId` (drops the entry from schema.json `views[]` and unlinks its HTML), then refetches so the toggle row updates. Add stays on the header **+**; the modal owns delete.
 
 A `toggle` field is a checkbox that **projects** an `enum` field (stores nothing itself): checked when the enum equals its `onValue`, toggling writes `onValue`/`offValue` back to that enum. It renders inline in the table (`[collections-inline-toggle-<key>-<id>]`) and on the kanban card (`[collection-kanban-toggle-<id>]`, shown when it projects the board's group field — checking it also moves the card). This is how a todo-style "done" checkbox fronts a kanban `status` while keeping the enum as the single source of truth.
+
+## Settings → Personality / Rules tabs — the assistant profile
+
+The **Assistant** group leads the Settings sidebar (`[settings-tab-personality]`,
+`[settings-tab-rules]`). Both tabs stay mounted (`v-show`) while the modal
+is open, so an unsaved draft survives a tab switch; closing the modal asks
+first (`unsavedPersonalityConfirm` / `unsavedRuleConfirm`). Stored at
+`config/personality.json` / `config/rules.json`, read on every turn and
+folded into the system prompt (`server/agent/assistantProfilePrompt.ts`).
+
+Three-way choices use `<SegmentedControl>` (one click, radio semantics)
+rather than a stepped slider — testids are `<testid>-<value>`.
+
+```text
+┌─[settings-personality-tab]─────────────────────────────────────────┐
+│ ┌──────────────────────────────────────────────────────────────┐   │
+│ │ Style and tone              [settings-personality-tone ▾]    │   │
+│ │ Warmth        [settings-personality-warmth-{less|default|more}]  │
+│ │ Enthusiasm    [settings-personality-enthusiasm-…]            │   │
+│ │ Headings/lists[settings-personality-formatting-…]            │   │
+│ │ Emoji         [settings-personality-emoji-…]                 │   │
+│ └──────────────────────────────────────────────────────────────┘   │
+│ Custom instructions [settings-personality-instructions]            │
+│ [settings-personality-instructions-save] ●[…-instructions-dirty]   │
+└────────────────────────────────────────────────────────────────────┘
+┌─[settings-rules-tab]───────────────────────────────────────────────┐
+│ 🛡 Custom rules — intro                                             │
+│ Default rules            [settings-rules-defaults-toggle] View/Hide │
+│   └ [settings-rules-defaults] (read-only list, grouped by kind)     │
+│ Plugin permissions       [settings-rules-plugins-open] Manage ›     │
+│ Your rules [settings-rules-list] / [settings-rules-empty]           │
+│   [settings-rule-<id>]  badge · text · [settings-rule-toggle-<id>]  │
+│                         [settings-rule-edit-<id>] [settings-rule-delete-<id>]
+│   [settings-rule-editor] kind [settings-rule-editor-kind-{ask|allow|never}]
+│                          [settings-rule-editor-text] [-save] [-cancel]
+│                                            ( [settings-rules-add] ) │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+**Manage ›** swaps the tab body for `<SettingsPluginPermissions>`
+(`[settings-plugin-permissions]`, back = `[settings-plugin-permissions-back]`):
+one `[settings-plugin-permission-<key>-{allow|ask|never}]` row per role-gated
+tool and per user MCP server (`<key>` = `mcp__<server>`), listed by
+`GET /api/config/rules/catalog`. **Never** is enforced — the plugin / server is
+removed before the CLI starts (`server/agent/pluginPermissions.ts`); **Ask
+first** and the prose rules are prompt guidance.
 
 ## Settings → Skills tab — workspace skills list
 
