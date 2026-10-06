@@ -249,7 +249,7 @@ MULMOCLAUDE_CLIENT_DIR="$PWD/dist/client" \
     settings.json     (web Settings UI — extraAllowedTools)
     mcp.json          (Claude CLI --mcp-config compatible)
     csp.json          (optional — extend the sandbox-view CSP; see csp-config.md)
-    personality.json  (Settings → Personality — tone, characteristics, custom instructions)
+    personality.json  (Settings → Personality — name/icon, tone, characteristics, custom instructions)
     rules.json        (Settings → Rules — ask / allow / never rules + plugin permissions)
     roles/            user-defined role overrides
     helps/            synced from server/workspace/helps/ at every boot
@@ -279,7 +279,7 @@ MULMOCLAUDE_CLIENT_DIR="$PWD/dist/client" \
   .mulmoclaude/       internal: per-session MCP config files
 ```
 
-The `config/` dir is the home for the [web Settings UI](../README.md#configuring-additional-tools-web-settings) — `settings.json` carries `extraAllowedTools`, `mcp.json` follows Claude CLI's `--mcp-config` format so you can copy it between machines. The optional `csp.json` extends the sandbox-view Content Security Policy (e.g. to allow a Google Maps embed) — see [csp-config.md](csp-config.md) for the schema and the security tradeoffs. `personality.json` and `rules.json` back the Settings → Personality / Rules tabs; both are read on every turn and folded into the system prompt (`server/agent/assistantProfilePrompt.ts`), and a plugin or MCP server set to *never* in `rules.json` is dropped from the session before the CLI starts (`server/agent/pluginPermissions.ts`).
+The `config/` dir is the home for the [web Settings UI](../README.md#configuring-additional-tools-web-settings) — `settings.json` carries `extraAllowedTools`, `mcp.json` follows Claude CLI's `--mcp-config` format so you can copy it between machines. The optional `csp.json` extends the sandbox-view Content Security Policy (e.g. to allow a Google Maps embed) — see [csp-config.md](csp-config.md) for the schema and the security tradeoffs. `personality.json` and `rules.json` back the Settings → Personality / Rules tabs; both are read on every turn and folded into the system prompt (`server/agent/assistantProfilePrompt.ts`), and a plugin or MCP server set to *never* in `rules.json` is dropped from the session before the CLI starts (`server/agent/pluginPermissions.ts`). The agent changes both on request through the always-active `manageAssistant` MCP tool (`server/agent/mcp-tools/manageAssistant.ts`), which goes through the same normalisers and publishes the file change.
 
 Pre-#284 workspaces (with `chat/`, `summaries/`, `memory.md` at the workspace root) are still accepted by the server — old directory names continue to work alongside the modern layout. If you want to clean them up by hand, move them under `conversations/` and `data/` per the tree above.
 

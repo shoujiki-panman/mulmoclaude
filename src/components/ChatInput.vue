@@ -158,6 +158,7 @@ import { useSkillsList, type SkillSummary } from "../composables/useSkillsList";
 import { useSlashCommandMenu, handleSlashMenuKeydown } from "../composables/useSlashCommandMenu";
 import type { PastedFile } from "../types/pastedFile";
 import { buildHeicPreviewDataUrl, needsBrowserPreviewConversion } from "../utils/attachment/heicPreview";
+import { useAssistantIdentity } from "../composables/useAssistantIdentity";
 
 export type { PastedFile };
 
@@ -191,7 +192,12 @@ const emit = defineEmits<{
   "suggestion-send": [query: string];
 }>();
 
-const placeholder = computed(() => (props.isRunning ? t("chatInput.runningPlaceholder") : t("chatInput.placeholder")));
+// Addressed to the assistant by name once the user has given it one.
+const { identity } = useAssistantIdentity();
+const placeholder = computed(() => {
+  if (props.isRunning) return t("chatInput.runningPlaceholder");
+  return identity.value.name ? t("chatInput.placeholderNamed", { name: identity.value.name }) : t("chatInput.placeholder");
+});
 
 function removeBufferedAt(index: number): void {
   emit(

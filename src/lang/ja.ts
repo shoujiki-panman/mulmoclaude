@@ -40,6 +40,7 @@ const jaMessages = {
   },
   chatInput: {
     placeholder: "Claude にメッセージ…",
+    placeholderNamed: "{name}にメッセージ…",
     send: "送信",
     stop: "停止",
     runningPlaceholder: "実行中… Enter で後で送るキューに追加",
@@ -1078,6 +1079,11 @@ const jaMessages = {
   },
   settingsPersonalityTab: {
     description: "MulmoClaude の話し方を選びます。次のメッセージから、すべてのロールに反映されます。",
+    nameLabel: "名前",
+    namePlaceholder: "例：たぬき",
+    avatarLabel: "アイコン",
+    avatarPlaceholder: "🦝",
+    identityHint: "返信に表示され、自分のことをこの名前で名乗ります。空欄なら「アシスタント」と表示されます。",
     toneLabel: "文体とトーン",
     tones: {
       default: {
@@ -1139,6 +1145,7 @@ const jaMessages = {
     customInstructionsLabel: "カスタム指示",
     customInstructionsPlaceholder: "MulmoClaude にいつも覚えておいてほしいことを何でも共有してください（呼び方、仕事、好みの答え方など）",
     customInstructionsHint: "すべての会話で使われます。ルール（設定 → ルール）のほうが優先されます。",
+    chatHint: "チャットで「もう少したぬきっぽく話して」のように頼めば、この設定を自分で書き換えてくれます。",
     charCount: "{count} / {max}",
     loadError: "性格の設定を読み込めませんでした。",
     saveError: "性格の設定を保存できませんでした。",

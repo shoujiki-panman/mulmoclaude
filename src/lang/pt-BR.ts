@@ -33,6 +33,7 @@ const ptBRMessages = {
   },
   chatInput: {
     placeholder: "Mensagem para Claude…",
+    placeholderNamed: "Mensagem para {name}…",
     send: "Enviar",
     stop: "Parar",
     runningPlaceholder: "Em execução… pressione Enter para enfileirar",
@@ -1082,6 +1083,11 @@ const ptBRMessages = {
   },
   settingsPersonalityTab: {
     description: "Escolha como o MulmoClaude fala com você. Vale para todos os papéis a partir da sua próxima mensagem.",
+    nameLabel: "Nome",
+    namePlaceholder: "ex.: Tanuki",
+    avatarLabel: "Ícone",
+    avatarPlaceholder: "🦝",
+    identityHint: "Aparece nas respostas e é o nome que ele usa para si mesmo. Deixe em branco para manter o rótulo Assistente.",
     toneLabel: "Estilo e tom",
     tones: {
       default: {
@@ -1143,6 +1149,7 @@ const ptBRMessages = {
     customInstructionsLabel: "Instruções personalizadas",
     customInstructionsPlaceholder: "Compartilhe tudo o que o MulmoClaude deve sempre lembrar: como te chamar, o que você faz, como prefere as respostas…",
     customInstructionsHint: "Enviadas em todas as conversas. Suas regras (Configurações → Regras) têm prioridade.",
+    chatHint: "Você também pode pedir no chat — por exemplo, fale um pouco mais como um tanuki — e ele mesmo atualiza estas configurações.",
     charCount: "{count} / {max}",
     loadError: "Não foi possível carregar as configurações de personalidade.",
     saveError: "Não foi possível salvar as configurações de personalidade.",

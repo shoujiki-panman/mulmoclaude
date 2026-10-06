@@ -324,8 +324,19 @@ folded into the system prompt (`server/agent/assistantProfilePrompt.ts`).
 Three-way choices use `<SegmentedControl>` (one click, radio semantics)
 rather than a stepped slider — testids are `<testid>-<value>`.
 
+Once the assistant has a **name** (and optional icon), its replies are
+headed with it — the stack card title (`[stack-card-title]`), the reply
+card's own header (`[text-response-speaker]`) and the session sidebar
+label — and the composer placeholder becomes "Message <name>…". All of
+them read one shared `useAssistantIdentity()` that refetches on the
+`config/personality.json` file channel, so a change made in Settings or
+by asking in chat (the `manageAssistant` tool) shows up in place.
+
 ```text
 ┌─[settings-personality-tab]─────────────────────────────────────────┐
+│ ┌─[settings-personality-identity]──────────────────────────────┐   │
+│ │ Icon [settings-personality-avatar]  Name [settings-personality-name] │
+│ └──────────────────────────────────────────────────────────────┘   │
 │ ┌──────────────────────────────────────────────────────────────┐   │
 │ │ Style and tone              [settings-personality-tone ▾]    │   │
 │ │ Warmth        [settings-personality-warmth-{less|default|more}]  │

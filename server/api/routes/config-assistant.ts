@@ -7,6 +7,9 @@
 //   GET /api/config/rules/catalog → { plugins, mcpServers } the
 //                                   plugin-permission list offers
 //
+// Every write publishes on the file's change channel, the same signal the
+// `manageAssistant` chat tool sends, so all open views stay in step.
+//
 // Each PUT replaces the whole value — the tab always holds the full
 // object, so there is no merge to get wrong. The envelope is checked
 // strictly (a malformed body is a 400, never "reset to defaults"); the
@@ -25,13 +28,19 @@ import { isRecord } from "../../utils/types.js";
 import { log } from "../../system/logger/index.js";
 import { loadMcpConfig } from "../../system/config.js";
 import { listRoleGatedToolNames } from "../../agent/activeTools.js";
+import { publishFileChange } from "../../events/file-change.js";
+import { WORKSPACE_FILES } from "../../workspace/paths.js";
 
 const router = Router();
 
-/** Every field present with the right container type. Values inside
- *  are left to `normalizePersonality`. */
+const isOptionalString = (value: unknown): boolean => value === undefined || typeof value === "string";
+
+/** Every field present with the right container type (`name` / `avatar`
+ *  may be omitted by an older client). Values inside are left to
+ *  `normalizePersonality`. */
 export function isPersonalityPutBody(body: unknown): boolean {
   if (!isRecord(body)) return false;
+  if (!isOptionalString(body.name) || !isOptionalString(body.avatar)) return false;
   return typeof body.tone === "string" && isRecord(body.traits) && typeof body.customInstructions === "string";
 }
 
@@ -58,6 +67,8 @@ router.put(
       return;
     }
     const saved = await writePersonality(req.body);
+    // Other tabs (and the name on chat replies) follow the file channel.
+    void publishFileChange(WORKSPACE_FILES.personality);
     log.info("config-assistant", "PUT personality: ok", { tone: saved.tone });
     res.json(saved);
   }),
@@ -79,6 +90,7 @@ router.put(
       return;
     }
     const saved = await writeRules(req.body);
+    void publishFileChange(WORKSPACE_FILES.rules);
     log.info("config-assistant", "PUT rules: ok", { rules: saved.rules.length, plugins: Object.keys(saved.plugins).length });
     res.json(saved);
   }),

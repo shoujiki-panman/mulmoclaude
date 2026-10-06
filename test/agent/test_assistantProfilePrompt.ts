@@ -28,6 +28,19 @@ describe("buildPersonalitySection", () => {
     assert.doesNotMatch(section, /Custom instructions/);
   });
 
+  it("gives the assistant its name, and its avatar when there is one", () => {
+    const section = buildPersonalitySection(personalityWith({ name: "たぬき", avatar: "🦝" }));
+    assert.ok(section !== null);
+    assert.ok(section.includes('the user calls you "たぬき" (shown with 🦝)'));
+    assert.match(section, /MulmoClaude stays the name of the app/);
+    const nameOnly = buildPersonalitySection(personalityWith({ name: "たぬき" }));
+    assert.ok(nameOnly?.includes('the user calls you "たぬき". '));
+  });
+
+  it("adds no section for an avatar alone — it is only shown in the UI", () => {
+    assert.equal(buildPersonalitySection(personalityWith({ avatar: "🦝" })), null);
+  });
+
   it("carries custom instructions verbatim inside a delimited block", () => {
     const section = buildPersonalitySection(personalityWith({ customInstructions: "Call me Shu.\nAnswer in Japanese." }));
     assert.ok(section !== null);
@@ -49,10 +62,11 @@ describe("buildRulesSection", () => {
     assert.doesNotMatch(section, /### Plugin permissions/);
   });
 
-  it("tells the model where the rules and the personality live, so chat can edit them", () => {
+  it("points chat-driven changes at the manageAssistant tool", () => {
     const section = buildRulesSection(emptyRules(), noTools);
     assert.ok(section.includes("`config/rules.json`"));
     assert.ok(section.includes("`config/personality.json`"));
+    assert.ok(section.includes("`mcp__mulmoclaude__manageAssistant`"));
   });
 
   it("lists enabled user rules by kind and leaves disabled ones out", () => {

@@ -77,7 +77,10 @@
             <div class="max-w-3xl mx-auto space-y-4">
               <div class="rounded-lg border border-gray-300 bg-white shadow-sm p-5" :class="roleTheme">
                 <div class="flex justify-between items-start mb-2 text-sm text-gray-500">
-                  <span class="font-medium text-gray-700">{{ speakerLabel }}</span>
+                  <span class="flex items-center gap-1 font-medium text-gray-700" data-testid="text-response-speaker">
+                    <span v-if="speakerAvatar" aria-hidden="true">{{ speakerAvatar }}</span>
+                    <span>{{ speakerLabel }}</span>
+                  </span>
                   <span v-if="transportKind" class="italic">{{ transportKind }}</span>
                 </div>
                 <div
@@ -138,6 +141,7 @@ import { handleExternalLinkClick } from "@mulmoclaude/markdown-utils/dom/externa
 import { classifyWorkspacePath } from "../../utils/path/workspaceLinkRouter";
 import { useMermaidRenderer } from "../../utils/markdown/useMermaid";
 import { useAppApi } from "../../composables/useAppApi";
+import { useAssistantIdentity } from "../../composables/useAssistantIdentity";
 import { usePdfDownload } from "../../composables/usePdfDownload";
 import { useMarkdownZip } from "../../composables/useMarkdownZip";
 import { useClipboardCopy } from "@mulmoclaude/core/plugin-vue";
@@ -160,8 +164,12 @@ const props = withDefaults(
     // display text. Callers listen for `updateSource` to receive the
     // edited source and handle persistence themselves.
     editableSource?: string | undefined;
+    // False when the card only borrows this layout for something that
+    // is not a chat reply (FilesView's markdown preview): the speaker
+    // then keeps the generic label instead of the assistant's name.
+    isChatMessage?: boolean | undefined;
   }>(),
-  { editable: true, editableSource: undefined },
+  { editable: true, editableSource: undefined, isChatMessage: true },
 );
 const emit = defineEmits<{
   updateResult: [result: ToolResult];
@@ -222,11 +230,18 @@ const renderedHtml = computed(() => {
   return renderMarkdownToSafeHtml(processedText, MARKED_OPTIONS);
 });
 
+// The name / avatar the user gave the assistant (Settings → Personality),
+// shared app-wide and kept live, so a rename shows on every reply.
+const { identity } = useAssistantIdentity();
+const namesAssistant = computed(() => props.isChatMessage && messageRole.value === "assistant");
+
 const speakerLabel = computed(() => {
   if (messageRole.value === "system") return t("pluginTextResponse.speakerSystem");
   if (messageRole.value === "user") return t("pluginTextResponse.speakerUser");
-  return t("pluginTextResponse.speakerAssistant");
+  return (namesAssistant.value && identity.value.name) || t("pluginTextResponse.speakerAssistant");
 });
+
+const speakerAvatar = computed(() => (namesAssistant.value ? identity.value.avatar : ""));
 
 const roleTheme = computed(() => {
   switch (messageRole.value) {

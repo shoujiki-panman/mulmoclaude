@@ -70,6 +70,8 @@ import type { ToolResultComplete } from "gui-chat-protocol/vue";
 import { getPlugin } from "../tools";
 import { formatSmartTime } from "../utils/format/date";
 import { isRecord } from "../utils/types";
+import { speakerTitle } from "../utils/tools/speakerTitle";
+import { useAssistantIdentity } from "../composables/useAssistantIdentity";
 import CanvasViewToggle from "./CanvasViewToggle.vue";
 import CopyChatButton from "./CopyChatButton.vue";
 import type { LayoutMode } from "../utils/canvas/layoutMode";
@@ -95,8 +97,11 @@ defineProps<{
   hasNewMessages?: boolean;
 }>();
 
+// Names the assistant's replies once the user has given it a name.
+const { identity } = useAssistantIdentity();
+
 function sourceLabel(result: ToolResultComplete): string {
-  if (result.toolName === "text-response") return result.title ?? "Assistant";
+  if (result.toolName === "text-response") return speakerTitle(result, identity.value) ?? "Assistant";
   // `action` lives on the persisted tool-result (see #670b40a5
   // `feat(sidebar): use ToolResult.action for multi-feature labels`)
   // but is not yet declared on `ToolResultComplete` in

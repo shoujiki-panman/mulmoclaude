@@ -424,10 +424,10 @@ L'icône d'engrenage dans la barre latérale ouvre une modale Paramètres où vo
 
 Le groupe **Assistant**, en tête des Paramètres, règle le comportement de MulmoClaude dans tous les rôles — l'équivalent graphique d'un `CLAUDE.md` et des règles de Claude Code :
 
-- **Personnalité** — un préréglage de style et de ton, quatre traits (chaleur, enthousiasme, titres et listes, émojis ; chacun en un clic entre *moins* / *par défaut* / *plus*) et des **instructions personnalisées** en texte libre envoyées avec chaque conversation.
+- **Personnalité** — un nom et une icône (sur ses réponses et dans la zone de saisie), un préréglage de style et de ton, quatre traits (chaleur, enthousiasme, titres et listes, émojis ; chacun en un clic entre *moins* / *par défaut* / *plus*) et des **instructions personnalisées** en texte libre envoyées avec chaque conversation.
 - **Règles** — les règles intégrées indiquant quand MulmoClaude agit de lui-même et quand il demande d'abord (sous *Règles par défaut*), vos propres règles *demander d'abord* / *sans demander* / *jamais*, et les autorisations par plugin. Un plugin ou serveur MCP réglé sur *Jamais* est retiré de toutes les discussions ; les règles rédigées sont une consigne que MulmoClaude s'efforce de suivre.
 
-Les deux sont de simples fichiers (`config/personality.json`, `config/rules.json`) et s'appliquent dès le message suivant. Vous pouvez aussi le demander dans la discussion : « ajoute une règle : demander avant d'envoyer un e-mail ».
+Les deux sont de simples fichiers (`config/personality.json`, `config/rules.json`) et s'appliquent dès le message suivant. Vous pouvez aussi le demander dans la discussion — « parle un peu plus comme un tanuki », « ajoute une règle : demander avant d'envoyer un e-mail » — il met lui-même ces réglages à jour et répond aussitôt dans le nouveau style.
 
 ### Onglet Allowed Tools
 

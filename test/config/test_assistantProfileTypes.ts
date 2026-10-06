@@ -1,6 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CUSTOM_INSTRUCTIONS_MAX_CHARS, defaultPersonality, isDefaultPersonality, normalizePersonality } from "../../src/types/personality.js";
+import {
+  ASSISTANT_AVATAR_MAX_CHARS,
+  ASSISTANT_NAME_MAX_CHARS,
+  CUSTOM_INSTRUCTIONS_MAX_CHARS,
+  defaultPersonality,
+  invalidPatchFields,
+  isDefaultPersonality,
+  mergePersonality,
+  normalizePersonality,
+} from "../../src/types/personality.js";
 import {
   DEFAULT_RULES,
   MAX_CUSTOM_RULES,
@@ -22,6 +31,8 @@ describe("normalizePersonality", () => {
 
   it("keeps valid values", () => {
     const input = {
+      name: "たぬき",
+      avatar: "🦝",
       tone: "candid",
       traits: { warmth: "more", enthusiasm: "less", formatting: "default", emoji: "less" },
       customInstructions: "Call me Shu.",
@@ -32,10 +43,20 @@ describe("normalizePersonality", () => {
   it("falls back field by field, so one bad value keeps the rest", () => {
     const result = normalizePersonality({ tone: "pirate", traits: { warmth: "loads", emoji: "more" }, customInstructions: 7 });
     assert.deepEqual(result, {
+      name: "",
+      avatar: "",
       tone: "default",
       traits: { warmth: "default", enthusiasm: "default", formatting: "default", emoji: "more" },
       customInstructions: "",
     });
+  });
+
+  it("keeps the name and avatar on one line and caps them without splitting an emoji", () => {
+    const result = normalizePersonality({ name: "  たぬき\n  先生 ", avatar: `${"🦝".repeat(ASSISTANT_AVATAR_MAX_CHARS + 3)}` });
+    assert.equal(result.name, "たぬき 先生");
+    assert.equal(Array.from(result.avatar).length, ASSISTANT_AVATAR_MAX_CHARS);
+    assert.ok(Array.from(result.avatar).every((char) => char === "🦝"));
+    assert.equal(Array.from(normalizePersonality({ name: "あ".repeat(ASSISTANT_NAME_MAX_CHARS + 5) }).name).length, ASSISTANT_NAME_MAX_CHARS);
   });
 
   it("trims and caps custom instructions instead of rejecting them", () => {
@@ -51,12 +72,55 @@ describe("normalizePersonality", () => {
 });
 
 describe("isDefaultPersonality", () => {
-  it("is true only when nothing would reach the prompt", () => {
+  it("is true only when nothing is set", () => {
     assert.equal(isDefaultPersonality(defaultPersonality()), true);
+    assert.equal(isDefaultPersonality({ ...defaultPersonality(), name: "たぬき" }), false);
+    assert.equal(isDefaultPersonality({ ...defaultPersonality(), avatar: "🦝" }), false);
     assert.equal(isDefaultPersonality({ ...defaultPersonality(), tone: "nerdy" }), false);
     assert.equal(isDefaultPersonality({ ...defaultPersonality(), customInstructions: "hi" }), false);
     const traits = { ...defaultPersonality().traits, formatting: "less" as const };
     assert.equal(isDefaultPersonality({ ...defaultPersonality(), traits }), false);
+  });
+});
+
+describe("mergePersonality / invalidPatchFields", () => {
+  const current = {
+    ...defaultPersonality(),
+    name: "たぬき",
+    tone: "friendly" as const,
+    customInstructions: "Call me Shu.",
+  };
+
+  it("changes only the fields the patch names", () => {
+    const merged = mergePersonality(current, { traits: { emoji: "more" } });
+    assert.equal(merged.name, "たぬき");
+    assert.equal(merged.tone, "friendly");
+    assert.equal(merged.traits.emoji, "more");
+    assert.equal(merged.traits.warmth, "default");
+    assert.equal(merged.customInstructions, "Call me Shu.");
+  });
+
+  it("replaces or appends custom instructions", () => {
+    assert.equal(mergePersonality(current, { customInstructions: "Be brief." }).customInstructions, "Be brief.");
+    assert.equal(
+      mergePersonality(current, { appendInstructions: "  End sentences with ぽん.  " }).customInstructions,
+      "Call me Shu.\nEnd sentences with ぽん.",
+    );
+    assert.equal(mergePersonality(current, { customInstructions: "", appendInstructions: "Only this." }).customInstructions, "Only this.");
+  });
+
+  it("can clear the name with an empty string", () => {
+    assert.equal(mergePersonality(current, { name: "" }).name, "");
+  });
+
+  it("keeps the current value for anything invalid, and invalidPatchFields names it", () => {
+    const patch = { tone: "pirate", traits: { warmth: "loads", sparkle: "more" }, name: 3 };
+    const merged = mergePersonality(current, patch);
+    assert.equal(merged.tone, "friendly");
+    assert.equal(merged.traits.warmth, "default");
+    assert.equal(merged.name, "たぬき");
+    assert.deepEqual(invalidPatchFields(patch).sort(), ["name", "tone", "traits.sparkle", "traits.warmth"]);
+    assert.deepEqual(invalidPatchFields({ tone: "candid", traits: { emoji: "less" }, appendInstructions: "x" }), []);
   });
 });
 

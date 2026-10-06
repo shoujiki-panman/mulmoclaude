@@ -77,6 +77,8 @@ describe("personality route", () => {
     const result = await call(PERSONALITY, "get");
     assert.equal(result.status, 200);
     assert.deepEqual(result.body, {
+      name: "",
+      avatar: "",
       tone: "default",
       traits: { warmth: "default", enthusiasm: "default", formatting: "default", emoji: "default" },
       customInstructions: "",
@@ -84,10 +86,12 @@ describe("personality route", () => {
   });
 
   it("PUT stores the normalised value and GET reads it back", async () => {
-    const body = { tone: "efficient", traits: { warmth: "less", enthusiasm: "nope" }, customInstructions: "Short answers." };
+    const body = { name: " たぬき ", avatar: "🦝", tone: "efficient", traits: { warmth: "less", enthusiasm: "nope" }, customInstructions: "Short answers." };
     const saved = await call(PERSONALITY, "put", body);
     assert.equal(saved.status, 200);
     const expected = {
+      name: "たぬき",
+      avatar: "🦝",
       tone: "efficient",
       traits: { warmth: "less", enthusiasm: "default", formatting: "default", emoji: "default" },
       customInstructions: "Short answers.",
@@ -97,7 +101,8 @@ describe("personality route", () => {
   });
 
   it("PUT rejects a malformed envelope without touching what is stored", async () => {
-    for (const body of [null, [], { tone: "friendly" }, { tone: 1, traits: {}, customInstructions: "" }]) {
+    const wrongName = { name: 1, tone: "friendly", traits: {}, customInstructions: "" };
+    for (const body of [null, [], { tone: "friendly" }, { tone: 1, traits: {}, customInstructions: "" }, wrongName]) {
       const result = await call(PERSONALITY, "put", body);
       assert.equal(result.status, 400, JSON.stringify(body));
     }

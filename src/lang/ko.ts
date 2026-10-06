@@ -40,6 +40,7 @@ const koMessages = {
   },
   chatInput: {
     placeholder: "Claude에게 메시지…",
+    placeholderNamed: "{name}에게 메시지…",
     send: "전송",
     stop: "중지",
     runningPlaceholder: "실행 중… Enter로 대기열에 추가",
@@ -1076,6 +1077,11 @@ const koMessages = {
   },
   settingsPersonalityTab: {
     description: "MulmoClaude가 말하는 방식을 선택합니다. 다음 메시지부터 모든 역할에 적용됩니다.",
+    nameLabel: "이름",
+    namePlaceholder: "예: 너구리",
+    avatarLabel: "아이콘",
+    avatarPlaceholder: "🦝",
+    identityHint: "답변에 표시되고, 자신을 이 이름으로 부릅니다. 비워 두면 ‘어시스턴트’로 표시됩니다.",
     toneLabel: "문체와 톤",
     tones: {
       default: {
@@ -1137,6 +1143,7 @@ const koMessages = {
     customInstructionsLabel: "사용자 지정 지침",
     customInstructionsPlaceholder: "MulmoClaude가 항상 기억해 주었으면 하는 것을 무엇이든 알려 주세요 — 호칭, 하는 일, 선호하는 답변 방식 등…",
     customInstructionsHint: "모든 대화에 사용됩니다. 규칙(설정 → 규칙)이 우선합니다.",
+    chatHint: "채팅에서 ‘조금 더 너구리처럼 말해 줘’처럼 부탁하면 이 설정을 직접 바꿉니다.",
     charCount: "{count} / {max}",
     loadError: "성격 설정을 불러오지 못했습니다.",
     saveError: "성격 설정을 저장하지 못했습니다.",

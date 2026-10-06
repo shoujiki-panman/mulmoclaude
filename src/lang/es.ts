@@ -38,6 +38,7 @@ const esMessages = {
   },
   chatInput: {
     placeholder: "Mensaje para Claude…",
+    placeholderNamed: "Mensaje para {name}…",
     send: "Enviar",
     stop: "Detener",
     runningPlaceholder: "En ejecución… pulsa Enter para poner en cola",
@@ -1093,6 +1094,11 @@ const esMessages = {
   },
   settingsPersonalityTab: {
     description: "Elige cómo te habla MulmoClaude. Se aplica a todos los roles a partir de tu próximo mensaje.",
+    nameLabel: "Nombre",
+    namePlaceholder: "p. ej., Tanuki",
+    avatarLabel: "Icono",
+    avatarPlaceholder: "🦝",
+    identityHint: "Aparece en sus respuestas y es el nombre que usa para sí mismo. Déjalo vacío para mantener la etiqueta Asistente.",
     toneLabel: "Estilo y tono",
     tones: {
       default: {
@@ -1155,6 +1161,7 @@ const esMessages = {
     customInstructionsPlaceholder:
       "Comparte todo lo que MulmoClaude deba tener siempre presente: cómo llamarte, a qué te dedicas, cómo prefieres las respuestas…",
     customInstructionsHint: "Se envían en cada conversación. Tus reglas (Ajustes → Reglas) tienen prioridad.",
+    chatHint: "También puedes pedirlo en el chat —por ejemplo, «habla un poco más como un tanuki»— y actualizará estos ajustes por sí mismo.",
     charCount: "{count} / {max}",
     loadError: "No se pudo cargar la configuración de personalidad.",
     saveError: "No se pudo guardar la configuración de personalidad.",

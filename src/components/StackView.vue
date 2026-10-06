@@ -52,11 +52,13 @@
       >
         <button
           class="w-full flex items-center gap-2 px-3 py-2 border-b border-gray-100 text-left hover:bg-gray-50"
-          :title="item.head.title || item.head.toolName"
+          :title="speakerTitle(item.head, identity) || item.head.toolName"
           @click="emit('select', item.head.uuid)"
         >
           <span class="material-icons text-sm text-gray-400">{{ iconFor(item.head.toolName) }}</span>
-          <span class="text-sm font-medium text-gray-800 truncate">{{ item.head.title || item.head.toolName }}</span>
+          <span class="text-sm font-medium text-gray-800 truncate" data-testid="stack-card-title">{{
+            speakerTitle(item.head, identity) || item.head.toolName
+          }}</span>
           <span v-if="item.isGroup && item.members.length > 1" class="text-[10px] text-gray-400 shrink-0">{{ `${item.members.length}×` }}</span>
           <span v-if="resultTimestamps.get(item.head.uuid)" class="text-[10px] text-gray-400 shrink-0">{{
             formatSmartTime(resultTimestamps.get(item.head.uuid)!)
@@ -128,12 +130,16 @@ import { isNearBottom } from "../utils/dom/scrollable";
 import type { TextResponseData } from "../plugins/textResponse/types";
 import { formatSmartTime } from "../utils/format/date";
 import { isRecord } from "../utils/types";
+import { speakerTitle } from "../utils/tools/speakerTitle";
+import { useAssistantIdentity } from "../composables/useAssistantIdentity";
 import { buildStackDisplayItems, pickActiveCardUuid, resolveLatestScrollTarget } from "../utils/canvas/stackGrouping";
 import CanvasViewToggle from "./CanvasViewToggle.vue";
 import CopyChatButton from "./CopyChatButton.vue";
 import type { LayoutMode } from "../utils/canvas/layoutMode";
 
 const { t } = useI18n();
+// Names the assistant's replies once the user has given it a name.
+const { identity } = useAssistantIdentity();
 
 // Most plugin viewComponents use h-full internally, so a defined parent
 // height is required for them to render. text-response and the

@@ -99,6 +99,7 @@
             <TextResponseView
               :selected-result="markdownResult(mdFrontmatter ? mdFrontmatter.body : content.content)"
               :editable-source="content.content"
+              :is-chat-message="false"
               @update-source="(src: string) => emit('updateSource', src)"
             />
           </div>

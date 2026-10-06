@@ -55,6 +55,7 @@ const enMessages = {
   },
   chatInput: {
     placeholder: "Message Claude…",
+    placeholderNamed: "Message {name}…",
     send: "Send",
     stop: "Stop",
     runningPlaceholder: "Running… press Enter to queue for later",
@@ -1106,6 +1107,11 @@ const enMessages = {
   },
   settingsPersonalityTab: {
     description: "Choose how MulmoClaude talks to you. It applies to every role from your next message.",
+    nameLabel: "Name",
+    namePlaceholder: "e.g. Tanuki",
+    avatarLabel: "Icon",
+    avatarPlaceholder: "🦝",
+    identityHint: "Shown on its replies, and the name it uses for itself. Leave blank to keep the plain Assistant label.",
     toneLabel: "Style and tone",
     tones: {
       default: {
@@ -1167,6 +1173,7 @@ const enMessages = {
     customInstructionsLabel: "Custom instructions",
     customInstructionsPlaceholder: "Share anything MulmoClaude should always keep in mind — what to call you, what you do, how you like answers…",
     customInstructionsHint: "Sent with every conversation. Your rules (Settings → Rules) still take precedence.",
+    chatHint: "You can also just ask in chat — for example, talk a little more like a tanuki — and it updates these settings itself.",
     charCount: "{count} / {max}",
     loadError: "Could not load the personality settings.",
     saveError: "Could not save the personality settings.",

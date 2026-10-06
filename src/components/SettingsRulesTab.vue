@@ -193,18 +193,22 @@ async function load(): Promise<void> {
   loaded.value = true;
 }
 
-// Loads and saves share one queue: each save is derived from the latest
-// server-confirmed rules, so quick successive edits can't race, and a
-// reload waits for a save still in flight. Resolves to whether the save
-// landed.
+// Loads and saves share one queue, so quick successive edits can't race
+// and a reload waits for a save still in flight. Each save re-reads the
+// file and applies just its own change. Resolves to whether it landed.
 const { enqueue } = createMutationQueue();
 
 function persist(produce: (current: AssistantRules) => AssistantRules): Promise<boolean> {
   return enqueue(async () => {
     errorMessage.value = "";
-    const response = await apiPut<unknown>(API_ROUTES.config.rules, produce(stored.value));
+    // Build on what the server holds right now: a rule added meanwhile
+    // somewhere else (another tab, or by asking in chat) must survive.
+    const latest = await apiGet<unknown>(API_ROUTES.config.rules);
+    const base = latest.ok ? normalizeRules(latest.data) : stored.value;
+    const response = await apiPut<unknown>(API_ROUTES.config.rules, produce(base));
     if (!response.ok) {
       errorMessage.value = response.error || t("settingsRulesTab.saveError");
+      stored.value = base;
       return false;
     }
     stored.value = normalizeRules(response.data);

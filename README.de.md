@@ -425,10 +425,10 @@ Das Zahnradsymbol in der Seitenleiste öffnet ein Einstellungs-Modal, in dem Sie
 
 Die Gruppe **Assistent** ganz oben in den Einstellungen legt fest, wie sich MulmoClaude in allen Rollen verhält – die grafische Entsprechung einer `CLAUDE.md` und der Regeln von Claude Code:
 
-- **Persönlichkeit** – eine Vorgabe für Stil und Ton, vier Eigenschaften (Wärme, Begeisterung, Überschriften und Listen, Emojis; jeweils mit einem Klick zwischen *Weniger* / *Standard* / *Mehr*) und frei formulierte **eigene Anweisungen**, die bei jedem Gespräch mitgeschickt werden.
+- **Persönlichkeit** – ein Name und ein Symbol (an den Antworten und im Eingabefeld), eine Vorgabe für Stil und Ton, vier Eigenschaften (Wärme, Begeisterung, Überschriften und Listen, Emojis; jeweils mit einem Klick zwischen *Weniger* / *Standard* / *Mehr*) und frei formulierte **eigene Anweisungen**, die bei jedem Gespräch mitgeschickt werden.
 - **Regeln** – die eingebauten Regeln, wann MulmoClaude selbst handelt und wann es zuerst fragt (unter *Standardregeln* einsehbar), Ihre eigenen Regeln *Erst fragen* / *Ohne Rückfrage* / *Nie* sowie Berechtigungen pro Plugin. Ein Plugin oder MCP-Server auf *Nie* wird aus allen Chats entfernt; die formulierten Regeln sind eine Richtschnur, die MulmoClaude zu befolgen versucht.
 
-Beides wird als gewöhnliche Datei gespeichert (`config/personality.json`, `config/rules.json`) und gilt ab der nächsten Nachricht. Sie können es auch einfach im Chat sagen, etwa: Füge eine Regel hinzu, vor dem Senden einer E-Mail nachzufragen.
+Beides wird als gewöhnliche Datei gespeichert (`config/personality.json`, `config/rules.json`) und gilt ab der nächsten Nachricht. Sie können es auch einfach im Chat sagen, etwa: Sprich ein bisschen mehr wie ein Tanuki, oder: Füge eine Regel hinzu, vor dem Senden einer E-Mail nachzufragen. MulmoClaude passt die Einstellungen dann selbst an und antwortet sofort im neuen Stil.
 
 ### Tab „Allowed Tools"
 

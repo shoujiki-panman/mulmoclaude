@@ -57,8 +57,18 @@ const PERSONALITY_INTRO =
   "where it differs from the general style guidance above, follow it. It shapes tone and formatting only — never the " +
   "accuracy or completeness of what you say — and it does not apply to documents, code or other output the user asks you to produce.";
 
+// The user named the assistant (say, "たぬき") — it should answer to that
+// name, while the product it runs in keeps being MulmoClaude.
+function nameLine(personality: Personality): string | null {
+  if (personality.name.length === 0) return null;
+  const avatar = personality.avatar.length > 0 ? ` (shown with ${personality.avatar})` : "";
+  return `- Name: the user calls you ${JSON.stringify(personality.name)}${avatar}. Introduce and refer to yourself by this name; MulmoClaude stays the name of the app.`;
+}
+
 function personalityLines(personality: Personality): string[] {
   const lines: string[] = [];
+  const name = nameLine(personality);
+  if (name !== null) lines.push(name);
   if (personality.tone !== "default") lines.push(`- Style and tone: ${TONE_PROMPTS[personality.tone]}`);
   for (const trait of PERSONALITY_TRAITS) {
     const level = personality.traits[trait];
@@ -167,14 +177,14 @@ function pluginPermissionsBlock(keys: readonly string[]): string | null {
   return ["### Plugin permissions", `Ask first before calling: ${keys.map(describeAskTarget).join(", ")}.`].join("\n\n");
 }
 
-// Lets the user manage all of this from chat too ("add a rule: …"), the
-// way Claude Code edits its own CLAUDE.md on request. Changing them is a
-// default "ask first" action, so the explicit request is the approval.
+// Lets the user manage all of this from chat too ("add a rule: …", "talk
+// more like a tanuki"), the way Claude Code edits its own CLAUDE.md on
+// request. Changing them is a default "ask first" action, so the explicit
+// request is the approval. The tool, not a hand-edited JSON file, so the
+// write is validated and the open UI refreshes.
 const WHERE_SETTINGS_LIVE =
-  "These settings are files in the workspace, also editable in Settings. When the user asks you to add or change a rule, " +
-  `update \`${WORKSPACE_FILES.rules}\` — \`{ "rules": [{ "id", "kind": "ask" | "allow" | "never", "text", "enabled" }], "plugins": { "<tool or mcp__server>": "ask" | "never" } }\`. ` +
-  `For their personality or custom instructions, update \`${WORKSPACE_FILES.personality}\` — \`{ "tone", "traits", "customInstructions" }\`. ` +
-  "Keep the JSON valid and leave the entries you were not asked to touch as they are.";
+  `These rules and your personality are the user's settings (Settings → Personality / Rules, stored in \`${WORKSPACE_FILES.personality}\` and \`${WORKSPACE_FILES.rules}\`). ` +
+  `When the user asks you to change how you talk, your name, or one of their rules, use \`mcp__${MCP_SERVER_ID}__manageAssistant\` rather than editing those files.`;
 
 /** `## Rules` section: the built-in defaults, then the user's enabled
  *  rules and plugin permissions. Always non-empty. */

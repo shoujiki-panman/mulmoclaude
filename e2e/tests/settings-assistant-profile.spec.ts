@@ -1,11 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
 import { mockAllApis } from "../fixtures/api";
+import { SESSION_A } from "../fixtures/sessions";
 
 // Settings → Personality / Rules (the "Assistant" group). The mocks keep
 // server state in memory and echo every PUT, so each test can assert both
 // what the UI sent and what it shows after a reopen.
 
 interface PersonalityState {
+  name?: string;
+  avatar?: string;
   tone: string;
   traits: Record<string, string>;
   customInstructions: string;
@@ -71,6 +74,12 @@ test.describe("Settings → Personality", () => {
     await page.locator('[data-testid="settings-personality-tone"]').selectOption("candid");
     await expect.poll(() => state.personality.tone).toBe("candid");
 
+    // Name and icon save when the field is left (change event).
+    await page.locator('[data-testid="settings-personality-name"]').fill("たぬき");
+    await page.locator('[data-testid="settings-personality-avatar"]').fill("🦝");
+    await page.locator('[data-testid="settings-personality-avatar"]').press("Tab");
+    await expect.poll(() => [state.personality.name, state.personality.avatar]).toEqual(["たぬき", "🦝"]);
+
     await page.locator('[data-testid="settings-personality-emoji-less"]').click();
     await expect.poll(() => state.personality.traits.emoji).toBe("less");
     await expect(page.locator('[data-testid="settings-personality-emoji-less"]')).toHaveAttribute("aria-checked", "true");
@@ -90,6 +99,41 @@ test.describe("Settings → Personality", () => {
     await expect(textarea).toHaveValue("Call me Shu. Answer in Japanese.");
   });
 
+  test("a name save landing while the icon is being typed keeps the icon", async ({ page }) => {
+    const { state } = await mockProfileApi(page);
+    // Registered last, so it is checked first: hold the first PUT (the
+    // name's) until the icon has been typed, then let the mock answer it.
+    let release = (): void => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let firstPut = true;
+    await page.route(
+      (url) => url.pathname === "/api/config/personality",
+      async (route) => {
+        if (route.request().method() === "PUT" && firstPut) {
+          firstPut = false;
+          await held;
+        }
+        return route.fallback();
+      },
+    );
+    await page.goto("/chat");
+    await openTab(page, "personality");
+
+    const avatar = page.locator('[data-testid="settings-personality-avatar"]');
+    await page.locator('[data-testid="settings-personality-name"]').fill("たぬき");
+    // Moving to the icon field commits the name (its save is now held).
+    await avatar.fill("🦝");
+    release();
+    await expect(page.locator('[data-testid="settings-personality-status"]')).toBeVisible();
+    expect(state.personality.name).toBe("たぬき");
+    await expect(avatar).toHaveValue("🦝");
+
+    await avatar.press("Tab");
+    await expect.poll(() => state.personality.avatar).toBe("🦝");
+  });
+
   test("closing with unsaved instructions asks first", async ({ page }) => {
     await mockProfileApi(page);
     await page.goto("/chat");
@@ -104,6 +148,30 @@ test.describe("Settings → Personality", () => {
     await page.locator('[data-testid="settings-close-btn"]').click();
     await expect.poll(() => prompted).toBe(true);
     await expect(page.locator('[data-testid="settings-modal"]')).toBeVisible();
+  });
+});
+
+test.describe("Assistant name on chat replies", () => {
+  test("labels assistant replies with the configured name and icon, and leaves the user's alone", async ({ page }) => {
+    const personality = {
+      name: "たぬき",
+      avatar: "🦝",
+      tone: "default",
+      traits: { warmth: "default", enthusiasm: "default", formatting: "default", emoji: "default" },
+      customInstructions: "",
+    };
+    await mockProfileApi(page, { personality });
+    await page.addInitScript(() => localStorage.setItem("canvas_layout_mode", "stack"));
+    await page.goto(`/chat/${SESSION_A.id}`);
+
+    // Stack view heads each card with the speaker; the reply card's own
+    // (collapsed) header carries the same name.
+    const titles = page.locator('[data-testid="stack-card-title"]');
+    await expect(titles.filter({ hasText: "🦝 たぬき" })).toHaveCount(1);
+    await expect(titles.filter({ hasText: "You" })).toHaveCount(1);
+    await expect(page.locator('[data-testid="text-response-speaker"]').filter({ hasText: "たぬき" })).toHaveCount(1);
+    // …and the composer addresses it by name.
+    await expect(page.getByPlaceholder("Message たぬき…")).toBeVisible();
   });
 });
 
@@ -165,6 +233,20 @@ test.describe("Settings → Rules", () => {
     await toggle.click();
     await expect(page.locator('[data-testid="settings-rules-error"]')).toContainText("disk full");
     await expect(toggle).toBeChecked();
+  });
+
+  test("a rule added elsewhere while the tab is open survives a save made here", async ({ page }) => {
+    const { state } = await mockProfileApi(page, { rules: { rules: [{ id: "r1", kind: "ask", text: "Booking travel", enabled: true }], plugins: {} } });
+    await page.goto("/chat");
+    await openTab(page, "rules");
+    await expect(page.locator('[data-testid="settings-rule-r1"]')).toBeVisible();
+
+    // Meanwhile the agent adds a rule because the user asked in chat.
+    state.rules = { ...state.rules, rules: [...state.rules.rules, { id: "r2", kind: "never", text: "Posting on social media", enabled: true }] };
+
+    await page.locator('[data-testid="settings-rule-toggle-r1"]').click();
+    await expect.poll(() => state.rules.rules.map((rule) => `${rule.id}:${String(rule.enabled)}`)).toEqual(["r1:false", "r2:true"]);
+    await expect(page.locator('[data-testid="settings-rule-r2"]')).toBeVisible();
   });
 
   test("sets plugin permissions from the Manage view", async ({ page }) => {

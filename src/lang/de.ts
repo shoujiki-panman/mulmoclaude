@@ -33,6 +33,7 @@ const deMessages = {
   },
   chatInput: {
     placeholder: "Nachricht an Claude…",
+    placeholderNamed: "Nachricht an {name}…",
     send: "Senden",
     stop: "Stoppen",
     runningPlaceholder: "Läuft… Enter reiht die Nachricht ein",
@@ -1096,6 +1097,11 @@ const deMessages = {
   },
   settingsPersonalityTab: {
     description: "Lege fest, wie MulmoClaude mit dir spricht. Gilt ab deiner nächsten Nachricht für alle Rollen.",
+    nameLabel: "Name",
+    namePlaceholder: "z. B. Tanuki",
+    avatarLabel: "Symbol",
+    avatarPlaceholder: "🦝",
+    identityHint: "Erscheint an seinen Antworten und ist der Name, mit dem es sich selbst nennt. Leer lassen für die einfache Bezeichnung Assistent.",
     toneLabel: "Stil und Ton",
     tones: {
       default: {
@@ -1158,6 +1164,7 @@ const deMessages = {
     customInstructionsPlaceholder:
       "Teile alles, was MulmoClaude immer im Kopf behalten soll – wie es dich nennen soll, was du machst, wie du Antworten magst …",
     customInstructionsHint: "Wird bei jedem Gespräch mitgeschickt. Deine Regeln (Einstellungen → Regeln) haben Vorrang.",
+    chatHint: "Du kannst es auch einfach im Chat sagen – etwa: Sprich ein bisschen mehr wie ein Tanuki – dann passt es diese Einstellungen selbst an.",
     charCount: "{count} / {max}",
     loadError: "Die Persönlichkeitseinstellungen konnten nicht geladen werden.",
     saveError: "Die Persönlichkeitseinstellungen konnten nicht gespeichert werden.",

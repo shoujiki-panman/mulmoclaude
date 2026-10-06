@@ -38,6 +38,7 @@ const zhMessages = {
   },
   chatInput: {
     placeholder: "向 Claude 发送消息…",
+    placeholderNamed: "向 {name} 发送消息…",
     send: "发送",
     stop: "停止",
     runningPlaceholder: "运行中… 按 Enter 加入队列",
@@ -1061,6 +1062,11 @@ const zhMessages = {
   },
   settingsPersonalityTab: {
     description: "选择 MulmoClaude 与你交流的方式。从下一条消息起对所有角色生效。",
+    nameLabel: "名字",
+    namePlaceholder: "例如：狸猫",
+    avatarLabel: "图标",
+    avatarPlaceholder: "🦝",
+    identityHint: "显示在它的回复上，它也会用这个名字称呼自己。留空则显示为“助手”。",
     toneLabel: "风格与语气",
     tones: {
       default: {
@@ -1122,6 +1128,7 @@ const zhMessages = {
     customInstructionsLabel: "自定义指令",
     customInstructionsPlaceholder: "分享任何希望 MulmoClaude 始终记住的事——怎么称呼你、你的工作、你喜欢的回答方式……",
     customInstructionsHint: "每次对话都会使用。你的规则（设置 → 规则）优先。",
+    chatHint: "也可以直接在聊天中说，比如“说话再像狸猫一点”，它会自己更新这些设置。",
     charCount: "{count} / {max}",
     loadError: "无法加载个性设置。",
     saveError: "无法保存个性设置。",
