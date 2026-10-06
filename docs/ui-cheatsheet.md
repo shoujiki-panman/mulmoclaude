@@ -322,7 +322,11 @@ first (`unsavedPersonalityConfirm` / `unsavedRuleConfirm`). Stored at
 folded into the system prompt (`server/agent/assistantProfilePrompt.ts`).
 
 Three-way choices use `<SegmentedControl>` (one click, radio semantics)
-rather than a stepped slider — testids are `<testid>-<value>`.
+rather than a stepped slider — testids are `<testid>-<value>`. A rule's
+mode is one of four (ChatGPT dots' Custom Rules: take action without
+asking / when you say so / ask before taking action / hand off to you), too
+long for a segment, so the rule editor lists them as radio cards with a
+one-line hint each.
 
 Once the assistant has a **name** (and optional icon), its replies are
 headed with it — the stack card title (`[stack-card-title]`), the reply
@@ -350,13 +354,16 @@ by asking in chat (the `manageAssistant` tool) shows up in place.
 ┌─[settings-rules-tab]───────────────────────────────────────────────┐
 │ 🛡 Custom rules — intro                                             │
 │ Default rules            [settings-rules-defaults-toggle] View/Hide │
-│   └ [settings-rules-defaults] (read-only list, grouped by kind)     │
+│   └ [settings-rules-defaults] read-only, one group per mode:        │
+│     [settings-rules-defaults-{allow|requested|ask|handoff}]        │
+│     + [settings-rules-defaults-safety] (no rule can change these)  │
 │ Plugin permissions       [settings-rules-plugins-open] Manage ›     │
 │ Your rules [settings-rules-list] / [settings-rules-empty]           │
-│   [settings-rule-<id>]  badge · text · [settings-rule-toggle-<id>]  │
-│                         [settings-rule-edit-<id>] [settings-rule-delete-<id>]
-│   [settings-rule-editor] kind [settings-rule-editor-kind-{ask|allow|never}]
-│                          [settings-rule-editor-text] [-save] [-cancel]
+│   [settings-rule-<id>]  text / mode badge [settings-rule-kind-<id>] │
+│      [settings-rule-toggle-<id>] [settings-rule-edit-<id>] [settings-rule-delete-<id>]
+│   [settings-rule-editor] [settings-rule-editor-text]               │
+│      mode [settings-rule-editor-kind-{allow|requested|ask|handoff}] │
+│      [settings-rule-editor-save] [settings-rule-editor-cancel]     │
 │                                            ( [settings-rules-add] ) │
 └────────────────────────────────────────────────────────────────────┘
 ```
@@ -367,7 +374,8 @@ one `[settings-plugin-permission-<key>-{allow|ask|never}]` row per role-gated
 tool and per user MCP server (`<key>` = `mcp__<server>`), listed by
 `GET /api/config/rules/catalog`. **Never** is enforced — the plugin / server is
 removed before the CLI starts (`server/agent/pluginPermissions.ts`); **Ask
-first** and the prose rules are prompt guidance.
+first** (= use it when the user asked for it, otherwise check first) and the
+prose rules are prompt guidance.
 
 ## Settings → Skills tab — workspace skills list
 

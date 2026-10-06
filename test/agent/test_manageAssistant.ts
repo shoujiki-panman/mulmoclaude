@@ -92,12 +92,14 @@ describe("manageAssistant — rules", () => {
 
   it("rejects a bad kind or empty text", async () => {
     assert.match(await manageAssistantHandler(harness.deps, { action: "addRule", rule: { kind: "maybe", text: "x" } }), /rule\.kind must be one of/);
-    assert.match(await manageAssistantHandler(harness.deps, { action: "addRule", rule: { kind: "never", text: "  " } }), /non-empty/);
+    // "never" is a plugin permission, not a rule mode.
+    assert.match(await manageAssistantHandler(harness.deps, { action: "addRule", rule: { kind: "never", text: "x" } }), /rule\.kind must be one of/);
+    assert.match(await manageAssistantHandler(harness.deps, { action: "addRule", rule: { kind: "handoff", text: "  " } }), /non-empty/);
     assert.equal(harness.state.rules.rules.length, 0);
   });
 
   it("removes a rule by id and reports an unknown id", async () => {
-    harness.state.rules = { rules: [{ id: "r1", kind: "never", text: "Posting", enabled: true }], plugins: {} };
+    harness.state.rules = { rules: [{ id: "r1", kind: "handoff", text: "Posting", enabled: true }], plugins: {} };
     assert.match(await manageAssistantHandler(harness.deps, { action: "removeRule", ruleId: "nope" }), /no rule with id "nope"/);
     const reply = JSON.parse(await manageAssistantHandler(harness.deps, { action: "removeRule", ruleId: "r1" })) as { remaining: number };
     assert.equal(reply.remaining, 0);
@@ -122,7 +124,7 @@ describe("manageAssistant — registration", () => {
   it("keeps its schema's enums in step with the shared constants", () => {
     const tool = makeManageAssistantTool(makeDeps().deps);
     const schema = JSON.stringify(tool.definition.inputSchema);
-    for (const value of ["updatePersonality", "addRule", "removeRule", "candid", "less", "never"]) {
+    for (const value of ["updatePersonality", "addRule", "removeRule", "candid", "less", "requested", "handoff"]) {
       assert.ok(schema.includes(`"${value}"`), `schema mentions ${value}`);
     }
   });

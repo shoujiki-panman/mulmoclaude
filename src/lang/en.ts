@@ -619,7 +619,8 @@ const enMessages = {
     },
     rules: {
       title: "Rules",
-      summary: "Your rules for when the assistant acts on its own, asks first, or never acts, plus per-plugin permissions. Edited from Settings → Rules.",
+      summary:
+        "Your rules for when the assistant acts on its own, acts once you've asked, asks first every time, or hands off to you, plus per-plugin permissions. Edited from Settings → Rules.",
     },
     memory: {
       title: "Memory",
@@ -1192,27 +1193,32 @@ const enMessages = {
     empty: "No rules yet. For example: ask before sending any email.",
     addRule: "Add rule",
     kinds: {
-      ask: "Ask first",
-      allow: "Without asking",
-      never: "Never",
+      allow: "Take action without asking",
+      requested: "Take action when you say so",
+      ask: "Ask before taking action",
+      handoff: "Hand off to you",
     },
     kindHeadings: {
-      allow: "Does without asking",
-      ask: "Asks you first",
-      never: "Never does",
+      allow: "Takes action without asking",
+      requested: "Takes action when you've asked for it",
+      ask: "Asks before taking action, every time",
+      handoff: "Hands off to you",
     },
+    safetyHeading: "Never does — your rules can't change these",
     kindHints: {
-      ask: "MulmoClaude asks for your approval before doing this.",
-      allow: "MulmoClaude goes ahead without asking, even where a default rule would ask.",
-      never: "MulmoClaude won't do this even if you ask in chat — change the rule here instead.",
+      allow: "MulmoClaude goes ahead without checking with you, even where a default rule would ask.",
+      requested: "MulmoClaude goes ahead when you've asked for it — in chat, or in a skill or schedule you set up. Otherwise it asks you first.",
+      ask: "Right before acting, MulmoClaude shows you exactly what it's about to do and waits for your OK — every time, even when you asked for it.",
+      handoff: "MulmoClaude doesn't do this itself. It gets everything ready and tells you what's left for you to do.",
     },
     editor: {
-      kindLabel: "When this comes up",
-      textLabel: "What it covers",
+      kindLabel: "How should MulmoClaude handle it?",
+      textLabel: "Describe the action",
       placeholder: {
-        ask: "e.g. Sending an email or a chat message on my behalf",
         allow: "e.g. Deleting old files in artifacts/images",
-        never: "e.g. Posting anything to social media",
+        requested: "e.g. Adding or moving events on my calendar",
+        ask: "e.g. Sending an email or a chat message on my behalf",
+        handoff: "e.g. Posting anything to social media",
       },
       save: "Save rule",
     },
@@ -1228,6 +1234,7 @@ const enMessages = {
       deleteOrOverwrite: "Delete files or data, or overwrite large parts of existing content.",
       sendOrPublish: "Send or publish anything outside the workspace — email, chat messages, social posts, invitations, git push.",
       moneyOrCommitments: "Anything that costs money or commits you to something — purchases, bookings, subscriptions.",
+      signInOrPay: "Sign in somewhere, or type in passwords, verification codes or payment card details.",
       changeSetup: "Change MulmoClaude's own setup — settings, roles, skills, schedules, this personality and these rules.",
       outsideWorkspace: "Install software or change anything outside the workspace.",
       exposeSecrets: "Reveal or send passwords, API keys or other secrets.",
@@ -1236,7 +1243,7 @@ const enMessages = {
     plugins: {
       back: "Rules",
       description:
-        "Choose how MulmoClaude may use each plugin. Never removes the plugin's tools from every chat; Ask first makes MulmoClaude check with you before using it.",
+        "Choose how MulmoClaude may use each plugin. Never removes the plugin's tools from every chat; Ask first lets MulmoClaude use it when you've asked for it, and check with you otherwise.",
       builtInHeading: "MulmoClaude plugins",
       mcpHeading: "MCP servers",
       levels: {

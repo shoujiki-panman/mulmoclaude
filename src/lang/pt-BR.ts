@@ -593,7 +593,7 @@ const ptBRMessages = {
     rules: {
       title: "Regras",
       summary:
-        "Suas regras sobre quando o assistente age sozinho, pergunta antes ou nunca age, além das permissões por plugin. Editadas em Configurações → Regras.",
+        "Suas regras sobre quando o assistente age sozinho, age quando você pede, pergunta antes toda vez ou deixa com você, além das permissões por plugin. Editadas em Configurações → Regras.",
     },
     memory: {
       title: "Memória",
@@ -1168,27 +1168,33 @@ const ptBRMessages = {
     empty: "Nenhuma regra ainda. Por exemplo: perguntar antes de enviar qualquer e-mail.",
     addRule: "Adicionar regra",
     kinds: {
-      ask: "Perguntar antes",
-      allow: "Sem perguntar",
-      never: "Nunca",
+      allow: "Agir sem perguntar",
+      requested: "Agir quando você pedir",
+      ask: "Perguntar antes de agir",
+      handoff: "Deixar com você",
     },
     kindHeadings: {
-      allow: "Faz sem perguntar",
-      ask: "Pergunta antes",
-      never: "Nunca faz",
+      allow: "Age sem perguntar",
+      requested: "Age quando você pediu",
+      ask: "Pergunta antes de agir, toda vez",
+      handoff: "Deixa com você",
     },
+    safetyHeading: "Nunca faz — suas regras não podem mudar isso",
     kindHints: {
-      ask: "O MulmoClaude pede sua aprovação antes de fazer isso.",
-      allow: "O MulmoClaude segue sem perguntar, mesmo quando uma regra padrão pediria confirmação.",
-      never: "O MulmoClaude não fará isso nem se você pedir no chat; para mudar, edite a regra aqui.",
+      allow: "O MulmoClaude segue em frente sem consultar você, mesmo onde uma regra padrão perguntaria.",
+      requested:
+        "O MulmoClaude segue em frente quando você pediu: no chat ou em uma skill ou tarefa agendada que você configurou. Caso contrário, pergunta antes.",
+      ask: "Logo antes de agir, o MulmoClaude mostra exatamente o que vai fazer e espera o seu OK, toda vez, mesmo quando você pediu.",
+      handoff: "O MulmoClaude não faz isso sozinho. Ele prepara tudo o que puder e diz o que falta você fazer.",
     },
     editor: {
-      kindLabel: "Quando isso acontecer",
-      textLabel: "O que abrange",
+      kindLabel: "Como o MulmoClaude deve lidar com isso?",
+      textLabel: "Descreva a ação",
       placeholder: {
+        allow: "ex.: excluir arquivos antigos em artifacts/images",
+        requested: "ex.: adicionar ou mover eventos na minha agenda",
         ask: "ex.: enviar um e-mail ou uma mensagem em meu nome",
-        allow: "ex.: apagar arquivos antigos em artifacts/images",
-        never: "ex.: publicar qualquer coisa em redes sociais",
+        handoff: "ex.: publicar qualquer coisa em redes sociais",
       },
       save: "Salvar regra",
     },
@@ -1204,6 +1210,7 @@ const ptBRMessages = {
       deleteOrOverwrite: "Excluir arquivos ou dados, ou sobrescrever grande parte do conteúdo existente.",
       sendOrPublish: "Enviar ou publicar algo fora do workspace: e-mails, mensagens de chat, posts em redes sociais, convites, git push.",
       moneyOrCommitments: "Qualquer coisa que custe dinheiro ou crie um compromisso: compras, reservas, assinaturas.",
+      signInOrPay: "Entrar em alguma conta ou digitar senhas, códigos de verificação ou dados de cartão.",
       changeSetup: "Alterar a configuração do próprio MulmoClaude: configurações, papéis, skills, agendamentos, esta personalidade e estas regras.",
       outsideWorkspace: "Instalar software ou alterar algo fora do workspace.",
       exposeSecrets: "Revelar ou enviar senhas, chaves de API ou outros segredos.",
@@ -1212,7 +1219,7 @@ const ptBRMessages = {
     plugins: {
       back: "Regras",
       description:
-        "Escolha como o MulmoClaude pode usar cada plugin. Nunca remove as ferramentas do plugin de todos os chats; Perguntar antes faz o MulmoClaude consultar você antes de usá-lo.",
+        "Escolha como o MulmoClaude pode usar cada plugin. Nunca remove as ferramentas do plugin de todos os chats; Perguntar antes faz o MulmoClaude usá-lo quando você pedir e consultar você nos demais casos.",
       builtInHeading: "Plugins do MulmoClaude",
       mcpHeading: "Servidores MCP",
       levels: {

@@ -26,10 +26,16 @@
             </button>
           </div>
           <div v-if="showDefaults" id="settings-rules-defaults" class="px-4 pb-4 space-y-3" data-testid="settings-rules-defaults">
-            <div v-for="group in defaultGroups" :key="group.kind">
+            <div v-for="group in defaultGroups" :key="group.kind" :data-testid="`settings-rules-defaults-${group.kind}`">
               <div class="text-xs font-semibold text-gray-500">{{ t(`settingsRulesTab.kindHeadings.${group.kind}`) }}</div>
               <ul class="mt-1 list-disc pl-5 space-y-0.5 text-sm text-gray-700">
                 <li v-for="rule in group.rules" :key="rule.id">{{ t(`settingsRulesTab.defaults.${rule.id}`) }}</li>
+              </ul>
+            </div>
+            <div data-testid="settings-rules-defaults-safety">
+              <div class="text-xs font-semibold text-gray-500">{{ t("settingsRulesTab.safetyHeading") }}</div>
+              <ul class="mt-1 list-disc pl-5 space-y-0.5 text-sm text-gray-700">
+                <li v-for="rule in SAFETY_RULES" :key="rule.id">{{ t(`settingsRulesTab.defaults.${rule.id}`) }}</li>
               </ul>
             </div>
           </div>
@@ -65,10 +71,16 @@
               @cancel="editing = null"
             />
             <div v-else class="flex items-start gap-3 px-4 py-3">
-              <span class="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium" :class="KIND_BADGE_CLASSES[rule.kind]">
-                {{ t(`settingsRulesTab.kinds.${rule.kind}`) }}
-              </span>
-              <span class="flex-1 min-w-0 text-sm break-words" :class="rule.enabled ? 'text-gray-800' : 'text-gray-400 line-through'">{{ rule.text }}</span>
+              <div class="flex-1 min-w-0 space-y-1">
+                <div class="text-sm break-words" :class="rule.enabled ? 'text-gray-800' : 'text-gray-400 line-through'">{{ rule.text }}</div>
+                <span
+                  class="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  :class="KIND_BADGE_CLASSES[rule.kind]"
+                  :data-testid="`settings-rule-kind-${rule.id}`"
+                >
+                  {{ t(`settingsRulesTab.kinds.${rule.kind}`) }}
+                </span>
+              </div>
               <label class="shrink-0 flex items-center gap-1 text-xs text-gray-500 cursor-pointer">
                 <input
                   type="checkbox"
@@ -135,6 +147,8 @@ import { createMutationQueue } from "../utils/mutationQueue";
 import {
   DEFAULT_RULES,
   MAX_CUSTOM_RULES,
+  RULE_KINDS,
+  SAFETY_RULES,
   emptyRules,
   newRuleId,
   normalizeRules,
@@ -159,16 +173,18 @@ const emit = defineEmits<{
 }>();
 
 const KIND_BADGE_CLASSES: Record<RuleKind, string> = {
-  ask: "bg-amber-50 text-amber-800",
   allow: "bg-green-50 text-green-800",
-  never: "bg-red-50 text-red-700",
+  requested: "bg-sky-50 text-sky-800",
+  ask: "bg-amber-50 text-amber-800",
+  handoff: "bg-violet-50 text-violet-800",
 };
 
-// Same order the system prompt uses: free, then needs a yes, then never.
-const defaultGroups: { kind: RuleKind; rules: DefaultRule[] }[] = (["allow", "ask", "never"] as const).map((kind) => ({
+// Same order the system prompt uses: most autonomous mode first; the
+// safety rules follow on their own.
+const defaultGroups: { kind: RuleKind; rules: DefaultRule[] }[] = RULE_KINDS.map((kind) => ({
   kind,
   rules: DEFAULT_RULES.filter((rule) => rule.kind === kind),
-}));
+})).filter((group) => group.rules.length > 0);
 
 const stored = ref<AssistantRules>(emptyRules());
 const loaded = ref(false);

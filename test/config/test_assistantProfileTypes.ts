@@ -15,6 +15,7 @@ import {
   MAX_CUSTOM_RULES,
   RULE_KINDS,
   RULE_TEXT_MAX_CHARS,
+  SAFETY_RULES,
   normalizePluginPermissions,
   normalizeRuleList,
   normalizeRules,
@@ -129,7 +130,7 @@ describe("normalizeRuleList", () => {
     const rules = normalizeRuleList([
       { id: "ok", kind: "ask", text: "Ask before emailing", enabled: true },
       { id: "bad-kind", kind: "maybe", text: "x" },
-      { id: "no-text", kind: "never", text: "   " },
+      { id: "no-text", kind: "handoff", text: "   " },
       "not an object",
     ]);
     assert.deepEqual(rules, [{ id: "ok", kind: "ask", text: "Ask before emailing", enabled: true }]);
@@ -211,11 +212,30 @@ describe("DEFAULT_RULES", () => {
     }
   });
 
-  it("has a settings-tab translation for every default rule", () => {
+  it("has a settings-tab translation for every default and safety rule", () => {
     const { defaults }: { defaults: Record<string, string> } = enMessages.settingsRulesTab;
-    for (const rule of DEFAULT_RULES) {
-      assert.equal(typeof defaults[rule.id], "string", `missing settingsRulesTab.defaults.${rule.id}`);
+    const ids = [...DEFAULT_RULES, ...SAFETY_RULES].map((rule) => rule.id);
+    for (const ruleId of ids) {
+      assert.equal(typeof defaults[ruleId], "string", `missing settingsRulesTab.defaults.${ruleId}`);
     }
-    assert.deepEqual(Object.keys(defaults).sort(), DEFAULT_RULES.map((rule) => rule.id).sort());
+    assert.deepEqual(Object.keys(defaults).sort(), [...ids].sort());
+  });
+
+  it("has a label, heading, hint and example for every rule kind", () => {
+    const { kinds, kindHeadings, kindHints, editor } = enMessages.settingsRulesTab;
+    const groups: Record<string, Record<string, string>> = { kinds, kindHeadings, kindHints, placeholder: editor.placeholder };
+    for (const [group, messages] of Object.entries(groups)) {
+      assert.deepEqual(Object.keys(messages).sort(), [...RULE_KINDS].sort(), `settingsRulesTab ${group}`);
+    }
+  });
+});
+
+describe("SAFETY_RULES", () => {
+  it("are never-statements with ids of their own", () => {
+    const defaultIds = new Set(DEFAULT_RULES.map((rule) => rule.id));
+    for (const rule of SAFETY_RULES) {
+      assert.match(rule.prompt, /^Never /);
+      assert.ok(!defaultIds.has(rule.id), `${rule.id} is also a default rule`);
+    }
   });
 });

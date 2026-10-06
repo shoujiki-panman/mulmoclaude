@@ -605,7 +605,7 @@ const deMessages = {
     rules: {
       title: "Regeln",
       summary:
-        "Deine Regeln, wann der Assistent selbst handelt, zuerst fragt oder es nie tut, sowie Berechtigungen pro Plugin. Bearbeitet unter Einstellungen → Regeln.",
+        "Deine Regeln, wann der Assistent selbst handelt, erst auf deinen Wunsch handelt, jedes Mal zuerst fragt oder es dir überlässt, sowie Berechtigungen pro Plugin. Bearbeitet unter Einstellungen → Regeln.",
     },
     memory: {
       title: "Memory",
@@ -1183,27 +1183,33 @@ const deMessages = {
     empty: "Noch keine Regeln. Zum Beispiel: vor dem Senden einer E-Mail nachfragen.",
     addRule: "Regel hinzufügen",
     kinds: {
-      ask: "Erst fragen",
-      allow: "Ohne Rückfrage",
-      never: "Nie",
+      allow: "Ohne Nachfrage handeln",
+      requested: "Handeln, wenn du es sagst",
+      ask: "Vor dem Handeln fragen",
+      handoff: "Dir überlassen",
     },
     kindHeadings: {
-      allow: "Tut es ohne Rückfrage",
-      ask: "Fragt dich zuerst",
-      never: "Tut es nie",
+      allow: "Handelt ohne Nachfrage",
+      requested: "Handelt, wenn du darum gebeten hast",
+      ask: "Fragt jedes Mal vor dem Handeln",
+      handoff: "Überlässt es dir",
     },
+    safetyHeading: "Tut es nie – deine Regeln können das nicht ändern",
     kindHints: {
-      ask: "MulmoClaude bittet vorher um deine Zustimmung.",
-      allow: "MulmoClaude macht es ohne Rückfrage, auch wo eine Standardregel fragen würde.",
-      never: "MulmoClaude tut das nicht, selbst wenn du im Chat darum bittest – ändere dafür hier die Regel.",
+      allow: "MulmoClaude handelt, ohne dich zu fragen – auch dort, wo eine Standardregel nachfragen würde.",
+      requested:
+        "MulmoClaude handelt, wenn du darum gebeten hast – im Chat oder in einem Skill oder Zeitplan, den du eingerichtet hast. Sonst fragt es dich zuerst.",
+      ask: "Direkt vor dem Handeln zeigt MulmoClaude genau, was es tun wird, und wartet auf dein OK – jedes Mal, auch wenn du darum gebeten hast.",
+      handoff: "MulmoClaude erledigt das nicht selbst. Es bereitet alles vor, was es kann, und sagt dir, was noch zu tun ist.",
     },
     editor: {
-      kindLabel: "Wenn das ansteht",
-      textLabel: "Worum es geht",
+      kindLabel: "Wie soll MulmoClaude damit umgehen?",
+      textLabel: "Beschreibe die Aktion",
       placeholder: {
-        ask: "z. B. in meinem Namen eine E-Mail oder Chatnachricht senden",
         allow: "z. B. alte Dateien in artifacts/images löschen",
-        never: "z. B. irgendetwas in sozialen Netzwerken posten",
+        requested: "z. B. Termine in meinem Kalender eintragen oder verschieben",
+        ask: "z. B. in meinem Namen eine E-Mail oder Chatnachricht senden",
+        handoff: "z. B. irgendetwas in sozialen Netzwerken posten",
       },
       save: "Regel speichern",
     },
@@ -1220,6 +1226,7 @@ const deMessages = {
       sendOrPublish:
         "Etwas außerhalb des Arbeitsbereichs senden oder veröffentlichen – E-Mails, Chatnachrichten, Social-Media-Beiträge, Einladungen, git push.",
       moneyOrCommitments: "Alles, was Geld kostet oder dich verpflichtet – Käufe, Buchungen, Abonnements.",
+      signInOrPay: "Sich irgendwo anmelden oder Passwörter, Bestätigungscodes oder Kartendaten eingeben.",
       changeSetup: "MulmoClaudes eigene Konfiguration ändern – Einstellungen, Rollen, Skills, Zeitpläne, diese Persönlichkeit und diese Regeln.",
       outsideWorkspace: "Software installieren oder etwas außerhalb des Arbeitsbereichs ändern.",
       exposeSecrets: "Passwörter, API-Schlüssel oder andere Geheimnisse preisgeben oder versenden.",
@@ -1228,7 +1235,7 @@ const deMessages = {
     plugins: {
       back: "Regeln",
       description:
-        "Lege fest, wie MulmoClaude jedes Plugin nutzen darf. Nie entfernt die Werkzeuge des Plugins aus allen Chats; Erst fragen lässt MulmoClaude vor der Nutzung bei dir nachfragen.",
+        "Lege fest, wie MulmoClaude jedes Plugin nutzen darf. Nie entfernt die Werkzeuge des Plugins aus allen Chats; Erst fragen lässt MulmoClaude es nutzen, wenn du darum bittest, und sonst bei dir nachfragen.",
       builtInHeading: "MulmoClaude-Plugins",
       mcpHeading: "MCP-Server",
       levels: {

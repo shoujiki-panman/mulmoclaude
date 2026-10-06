@@ -592,7 +592,8 @@ const jaMessages = {
     },
     rules: {
       title: "ルール",
-      summary: "アシスタントが自分で進めるか、先に確認するか、行わないかのルールと、プラグインごとの権限。設定 → ルール から編集します。",
+      summary:
+        "アシスタントが確認せずに進めること、頼まれていれば進めること、毎回確認すること、あなたに任せることのルールと、プラグインごとの権限。設定 → ルール から編集します。",
     },
     memory: {
       title: "メモリ",
@@ -1164,27 +1165,32 @@ const jaMessages = {
     empty: "まだルールはありません。例：メールを送る前に必ず確認する。",
     addRule: "ルールを追加",
     kinds: {
-      ask: "確認してから",
-      allow: "確認なしで",
-      never: "しない",
+      allow: "確認せずに進める",
+      requested: "事前に頼んでいれば進める",
+      ask: "進める前に確認する",
+      handoff: "本人に任せる",
     },
     kindHeadings: {
-      allow: "確認なしで行うこと",
-      ask: "先に確認すること",
-      never: "しないこと",
+      allow: "確認せずに進めること",
+      requested: "頼まれていれば進めること",
+      ask: "毎回、進める前に確認すること",
+      handoff: "あなたに任せること",
     },
+    safetyHeading: "決してしないこと（ルールでは変えられません）",
     kindHints: {
-      ask: "MulmoClaude は、これを行う前にあなたの承認を求めます。",
       allow: "デフォルトのルールでは確認する場面でも、MulmoClaude は確認せずに進めます。",
-      never: "チャットで頼まれても MulmoClaude はこれを行いません。変えたいときは、ここでルールを変更してください。",
+      requested: "チャットで頼んだときや、設定したスキル・スケジュールに含まれているときは進めます。それ以外は先にあなたに確認します。",
+      ask: "頼まれた場合でも毎回、実行する直前に何をするかを示して、あなたの OK を待ちます。",
+      handoff: "MulmoClaude 自身は行いません。準備できるところまで進めて、残りの手順をあなたに伝えます。",
     },
     editor: {
-      kindLabel: "この場面では",
-      textLabel: "対象となる行動",
+      kindLabel: "MulmoClaude の対応",
+      textLabel: "アクションの説明",
       placeholder: {
-        ask: "例：私の代わりにメールやメッセージを送る",
         allow: "例：artifacts/images の古いファイルを削除する",
-        never: "例：SNS に何かを投稿する",
+        requested: "例：カレンダーに予定を追加・変更する",
+        ask: "例：私の代わりにメールやメッセージを送る",
+        handoff: "例：SNS に何かを投稿する",
       },
       save: "ルールを保存",
     },
@@ -1200,6 +1206,7 @@ const jaMessages = {
       deleteOrOverwrite: "ファイルやデータを削除する、既存の内容を大きく上書きする。",
       sendOrPublish: "ワークスペースの外に送信・公開する（メール、チャット、SNS 投稿、招待、git push など）。",
       moneyOrCommitments: "お金がかかること、約束を伴うこと（購入、予約、サブスクリプションなど）。",
+      signInOrPay: "どこかにログインする、パスワード・確認コード・カード情報を入力する。",
       changeSetup: "MulmoClaude 自体の設定を変える（設定、ロール、スキル、スケジュール、この性格やルール）。",
       outsideWorkspace: "ソフトウェアをインストールする、ワークスペースの外を変更する。",
       exposeSecrets: "パスワードや API キーなどの秘密情報を明かしたり送ったりする。",
@@ -1208,7 +1215,7 @@ const jaMessages = {
     plugins: {
       back: "ルール",
       description:
-        "プラグインごとに、MulmoClaude がどう使ってよいかを選びます。「使わない」にするとそのプラグインはすべてのチャットから外れ、「確認してから」にすると使う前にあなたに確認します。",
+        "プラグインごとに、MulmoClaude がどう使ってよいかを選びます。「使わない」にするとそのプラグインはすべてのチャットから外れ、「確認してから」にすると、あなたが頼んだときは使い、それ以外は先に確認します。",
       builtInHeading: "MulmoClaude のプラグイン",
       mcpHeading: "MCP サーバ",
       levels: {

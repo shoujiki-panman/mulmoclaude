@@ -590,7 +590,8 @@ const koMessages = {
     },
     rules: {
       title: "규칙",
-      summary: "어시스턴트가 스스로 진행할지, 먼저 확인할지, 하지 않을지에 대한 규칙과 플러그인별 권한. 설정 → 규칙에서 편집합니다.",
+      summary:
+        "어시스턴트가 묻지 않고 진행할지, 요청했을 때 진행할지, 매번 먼저 확인할지, 직접 하도록 맡길지에 대한 규칙과 플러그인별 권한. 설정 → 규칙에서 편집합니다.",
     },
     memory: {
       title: "메모리",
@@ -1162,27 +1163,32 @@ const koMessages = {
     empty: "아직 규칙이 없습니다. 예: 이메일을 보내기 전에 항상 확인하기.",
     addRule: "규칙 추가",
     kinds: {
-      ask: "먼저 확인",
-      allow: "확인 없이",
-      never: "하지 않음",
+      allow: "묻지 않고 진행",
+      requested: "요청했을 때 진행",
+      ask: "진행 전에 확인",
+      handoff: "직접 하도록 맡기기",
     },
     kindHeadings: {
-      allow: "확인 없이 하는 일",
-      ask: "먼저 확인하는 일",
-      never: "하지 않는 일",
+      allow: "묻지 않고 진행하는 일",
+      requested: "요청했을 때 진행하는 일",
+      ask: "매번 진행 전에 확인하는 일",
+      handoff: "직접 하도록 맡기는 일",
     },
+    safetyHeading: "절대 하지 않는 일 (규칙으로 바꿀 수 없음)",
     kindHints: {
-      ask: "MulmoClaude가 이 작업을 하기 전에 승인을 요청합니다.",
-      allow: "기본 규칙이 확인을 요구하는 경우에도 MulmoClaude가 확인 없이 진행합니다.",
-      never: "채팅에서 요청해도 MulmoClaude는 이 작업을 하지 않습니다. 바꾸려면 여기서 규칙을 변경하세요.",
+      allow: "기본 규칙상 확인하는 상황에서도 MulmoClaude가 묻지 않고 진행합니다.",
+      requested: "채팅에서 요청했거나 설정한 스킬·스케줄에 포함된 경우에는 진행하고, 그 밖에는 먼저 확인합니다.",
+      ask: "요청한 경우에도 매번, 실행 직전에 무엇을 할지 정확히 보여 주고 승인을 기다립니다.",
+      handoff: "MulmoClaude가 직접 하지 않습니다. 준비할 수 있는 데까지 해 두고, 남은 단계를 알려 드립니다.",
     },
     editor: {
-      kindLabel: "이런 상황에서는",
-      textLabel: "해당하는 행동",
+      kindLabel: "MulmoClaude가 어떻게 처리할까요?",
+      textLabel: "작업 설명",
       placeholder: {
-        ask: "예: 나 대신 이메일이나 채팅 메시지 보내기",
         allow: "예: artifacts/images의 오래된 파일 삭제하기",
-        never: "예: 소셜 미디어에 무엇이든 게시하기",
+        requested: "예: 내 캘린더에 일정 추가하거나 옮기기",
+        ask: "예: 나 대신 이메일이나 채팅 메시지 보내기",
+        handoff: "예: 소셜 미디어에 무엇이든 게시하기",
       },
       save: "규칙 저장",
     },
@@ -1198,6 +1204,7 @@ const koMessages = {
       deleteOrOverwrite: "파일이나 데이터를 삭제하거나 기존 내용을 크게 덮어씁니다.",
       sendOrPublish: "워크스페이스 밖으로 무언가를 보내거나 게시합니다 — 이메일, 채팅 메시지, 소셜 게시물, 초대, git push.",
       moneyOrCommitments: "돈이 들거나 약속이 따르는 일 — 구매, 예약, 구독.",
+      signInOrPay: "어딘가에 로그인하거나 비밀번호, 인증 코드, 카드 정보를 입력합니다.",
       changeSetup: "MulmoClaude 자체의 구성을 바꿉니다 — 설정, 역할, 스킬, 일정, 이 성격과 규칙.",
       outsideWorkspace: "소프트웨어를 설치하거나 워크스페이스 밖의 것을 변경합니다.",
       exposeSecrets: "비밀번호, API 키 같은 비밀 정보를 드러내거나 보냅니다.",
@@ -1206,7 +1213,7 @@ const koMessages = {
     plugins: {
       back: "규칙",
       description:
-        "MulmoClaude가 각 플러그인을 어떻게 사용할지 선택합니다. ‘사용 안 함’은 해당 플러그인의 도구를 모든 채팅에서 제외하고, ‘먼저 확인’은 사용하기 전에 확인을 요청하게 합니다.",
+        "MulmoClaude가 각 플러그인을 어떻게 사용할지 선택합니다. ‘사용 안 함’은 해당 플러그인의 도구를 모든 채팅에서 제외하고, ‘먼저 확인’은 요청했을 때만 사용하고 그 밖에는 먼저 확인하게 합니다.",
       builtInHeading: "MulmoClaude 플러그인",
       mcpHeading: "MCP 서버",
       levels: {

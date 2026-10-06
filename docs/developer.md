@@ -250,7 +250,7 @@ MULMOCLAUDE_CLIENT_DIR="$PWD/dist/client" \
     mcp.json          (Claude CLI --mcp-config compatible)
     csp.json          (optional — extend the sandbox-view CSP; see csp-config.md)
     personality.json  (Settings → Personality — name/icon, tone, characteristics, custom instructions)
-    rules.json        (Settings → Rules — ask / allow / never rules + plugin permissions)
+    rules.json        (Settings → Rules — custom rules in four modes + plugin permissions)
     roles/            user-defined role overrides
     helps/            synced from server/workspace/helps/ at every boot
   conversations/      # chat + distilled context

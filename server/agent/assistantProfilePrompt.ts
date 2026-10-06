@@ -12,7 +12,7 @@
 import type { Personality, PersonalityTrait, TonePreset, TraitLevel } from "../../src/types/personality.js";
 import { PERSONALITY_TRAITS } from "../../src/types/personality.js";
 import type { AssistantRule, AssistantRules, DefaultRule, RuleKind } from "../../src/types/assistantRules.js";
-import { DEFAULT_RULES, MCP_SERVER_PERMISSION_PREFIX } from "../../src/types/assistantRules.js";
+import { DEFAULT_RULES, MCP_SERVER_PERMISSION_PREFIX, RULE_KINDS, SAFETY_RULES } from "../../src/types/assistantRules.js";
 import { MCP_SERVER_ID } from "./activeTools.js";
 import { WORKSPACE_FILES } from "../workspace/paths.js";
 
@@ -103,54 +103,54 @@ export function buildPersonalitySection(personality: Personality): string | null
 
 const RULES_INTRO =
   "Decide for yourself when to go ahead and when to check with the user first, following these rules in every role. " +
-  "The defaults always apply; the user's own rules (Settings → Rules) are more specific and win where the two conflict.";
+  "The defaults always apply; the user's own rules (Settings → Rules) are more specific and win where the two conflict. " +
+  "Nothing overrides the rules under Always.";
+
+// The four modes of ChatGPT dots' Custom Rules. A skill, schedule or
+// automation the user set up is them saying so in advance — that keeps
+// their scheduled sends working under "when the user says so".
+const MODES = [
+  "Each rule says how to handle an action, in one of four ways:",
+  "- Take action without asking: just do it.",
+  "- Take action when the user says so: go ahead when the user clearly asked for this action — in this conversation, or in a skill, schedule or automation they set up. Otherwise, including when it is only implied, ask first.",
+  "- Ask before taking action: every time, even when the user asked for it. Right before acting, show exactly what you are about to do (what, where, to whom, how much; the full text of a message) and wait for a clear yes.",
+  "- Hand off to the user: don't do it yourself, even when asked. Do everything up to that step (a draft, the exact steps, the link), then tell the user what is left for them to do; if they want you to do it, the rule has to change first.",
+].join("\n");
 
 const HOW_TO_ASK =
-  "To check with the user, ask one short yes/no question before acting — with `presentForm` when you have it, otherwise in plain text — " +
-  "naming exactly what you are about to do (what, where, to whom), then stop until they answer. Go ahead only on a clear yes. " +
-  "Don't ask again for something the user explicitly asked for in this conversation: that request is the approval. " +
-  "A skill, schedule or automation the user set up counts as approval for the actions it describes. " +
-  "When nobody is there to answer (a scheduled or background run), skip the action and say in your result that it needs approval.";
+  "To ask, put one short yes/no question — with `presentForm` when you have it, otherwise in plain text — naming exactly what you are about to do, then stop until they answer. Go ahead only on a clear yes. " +
+  "When nobody is there to answer (a scheduled or background run), leave an action that needs a yes undone, finish the rest, and say in your result what is waiting for the user.";
 
 const KIND_HEADINGS: Record<RuleKind, string> = {
-  allow: "Go ahead without asking:",
-  ask: "Ask first:",
-  never: "Never:",
+  allow: "Take action without asking:",
+  requested: "Take action when the user says so (otherwise ask first):",
+  ask: "Ask before taking action, every time:",
+  handoff: "Hand off to the user:",
 };
-
-// The user's "never" rules are hard stops (Claude Code's `hard_deny`):
-// a request in chat does not lift them — only editing the rule does.
-const USER_NEVER_HEADING = "Never — not even when asked in chat (say that a rule in Settings → Rules blocks it):";
-
-/** Kind order inside each block: what may happen freely, then what
- *  needs a yes, then what must not happen. */
-const KIND_ORDER: readonly RuleKind[] = ["allow", "ask", "never"];
 
 function ruleGroup(heading: string, texts: readonly string[]): string | null {
   if (texts.length === 0) return null;
   return [heading, ...texts.map((text) => `- ${text}`)].join("\n");
 }
 
+/** One group per mode, most autonomous first; empty modes are left out. */
+function groupedByKind<T extends { kind: RuleKind }>(rules: readonly T[], text: (rule: T) => string): string[] {
+  const groups = RULE_KINDS.map((kind) => ruleGroup(KIND_HEADINGS[kind], rules.filter((rule) => rule.kind === kind).map(text)));
+  return groups.filter((group): group is string => group !== null);
+}
+
 function defaultRulesBlock(defaults: readonly DefaultRule[]): string {
-  const groups = KIND_ORDER.map((kind) =>
-    ruleGroup(
-      KIND_HEADINGS[kind],
-      defaults.filter((rule) => rule.kind === kind).map((rule) => rule.prompt),
-    ),
-  );
-  return ["### Defaults", ...groups.filter((group): group is string => group !== null)].join("\n\n");
+  return ["### Defaults", ...groupedByKind(defaults, (rule) => rule.prompt)].join("\n\n");
+}
+
+function safetyBlock(): string {
+  return ["### Always", ...SAFETY_RULES.map((rule) => `- ${rule.prompt}`)].join("\n");
 }
 
 function userRulesBlock(rules: readonly AssistantRule[]): string | null {
   const enabled = rules.filter((rule) => rule.enabled);
   if (enabled.length === 0) return null;
-  const groups = KIND_ORDER.map((kind) =>
-    ruleGroup(
-      kind === "never" ? USER_NEVER_HEADING : KIND_HEADINGS[kind],
-      enabled.filter((rule) => rule.kind === kind).map((rule) => rule.text),
-    ),
-  );
-  return ["### The user's rules", ...groups.filter((group): group is string => group !== null)].join("\n\n");
+  return ["### The user's rules", ...groupedByKind(enabled, (rule) => rule.text)].join("\n\n");
 }
 
 /** How one "ask" permission key reads in the prompt. */
@@ -172,28 +172,34 @@ export function askFirstPluginKeys(plugins: AssistantRules["plugins"], activeToo
     .sort();
 }
 
+// A plugin set to "Ask first" follows "take action when the user says so":
+// asking again for the chart the user just asked for helps nobody.
 function pluginPermissionsBlock(keys: readonly string[]): string | null {
   if (keys.length === 0) return null;
-  return ["### Plugin permissions", `Ask first before calling: ${keys.map(describeAskTarget).join(", ")}.`].join("\n\n");
+  const targets = keys.map(describeAskTarget).join(", ");
+  return ["### Plugin permissions", `Call these only when the user asked for what they do; otherwise ask first: ${targets}.`].join("\n\n");
 }
 
 // Lets the user manage all of this from chat too ("add a rule: …", "talk
 // more like a tanuki"), the way Claude Code edits its own CLAUDE.md on
-// request. Changing them is a default "ask first" action, so the explicit
-// request is the approval. The tool, not a hand-edited JSON file, so the
+// request. Changing them is a default "when the user says so" action, so
+// the explicit request is the approval. The tool, not a hand-edited JSON file, so the
 // write is validated and the open UI refreshes.
 const WHERE_SETTINGS_LIVE =
   `These rules and your personality are the user's settings (Settings → Personality / Rules, stored in \`${WORKSPACE_FILES.personality}\` and \`${WORKSPACE_FILES.rules}\`). ` +
   `When the user asks you to change how you talk, your name, or one of their rules, use \`mcp__${MCP_SERVER_ID}__manageAssistant\` rather than editing those files.`;
 
-/** `## Rules` section: the built-in defaults, then the user's enabled
- *  rules and plugin permissions. Always non-empty. */
+/** `## Rules` section: how the four modes work, the built-in defaults and
+ *  safety rules, then the user's enabled rules and plugin permissions.
+ *  Always non-empty. */
 export function buildRulesSection(rules: AssistantRules, activeToolNames: ReadonlySet<string>): string {
   const blocks = [
     "## Rules — when to act and when to ask first",
     RULES_INTRO,
+    MODES,
     HOW_TO_ASK,
     defaultRulesBlock(DEFAULT_RULES),
+    safetyBlock(),
     userRulesBlock(rules.rules),
     pluginPermissionsBlock(askFirstPluginKeys(rules.plugins, activeToolNames)),
     WHERE_SETTINGS_LIVE,

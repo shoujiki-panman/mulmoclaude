@@ -62,8 +62,8 @@ export const WORKSPACE_FILES = {
    *  prompt. Shape: `Personality` in `src/types/personality.ts`. Absent ⇒
    *  all defaults, which add nothing to the prompt. */
   personality: "config/personality.json",
-  /** Assistant rules (Settings → Rules): the user's ask / allow / never
-   *  rules plus per-plugin permissions. Shape: `AssistantRules` in
+  /** Assistant rules (Settings → Rules): the user's custom rules (one of
+   *  four modes each) plus per-plugin permissions. Shape: `AssistantRules` in
    *  `src/types/assistantRules.ts`. Absent ⇒ only the built-in defaults. */
   rules: "config/rules.json",
 } as const;

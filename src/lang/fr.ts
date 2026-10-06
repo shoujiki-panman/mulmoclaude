@@ -597,7 +597,7 @@ const frMessages = {
     rules: {
       title: "Règles",
       summary:
-        "Vos règles indiquant quand l'assistant agit seul, demande d'abord ou n'agit jamais, plus les autorisations par plugin. Modifiées depuis Paramètres → Règles.",
+        "Vos règles indiquant quand l'assistant agit seul, agit quand vous le demandez, demande d'abord à chaque fois ou vous laisse la main, plus les autorisations par plugin. Modifiées depuis Paramètres → Règles.",
     },
     memory: {
       title: "Mémoire",
@@ -1172,27 +1172,33 @@ const frMessages = {
     empty: "Aucune règle pour l'instant. Par exemple : demander avant d'envoyer un e-mail.",
     addRule: "Ajouter une règle",
     kinds: {
-      ask: "Demander d'abord",
-      allow: "Sans demander",
-      never: "Jamais",
+      allow: "Agir sans demander",
+      requested: "Agir quand vous le dites",
+      ask: "Demander avant d'agir",
+      handoff: "Vous laisser la main",
     },
     kindHeadings: {
-      allow: "Fait sans demander",
-      ask: "Vous demande d'abord",
-      never: "Ne fait jamais",
+      allow: "Agit sans demander",
+      requested: "Agit quand vous l'avez demandé",
+      ask: "Demande avant d'agir, à chaque fois",
+      handoff: "Vous laisse la main",
     },
+    safetyHeading: "Ne fait jamais — vos règles ne peuvent pas changer cela",
     kindHints: {
-      ask: "MulmoClaude demande votre accord avant de le faire.",
-      allow: "MulmoClaude agit sans demander, même là où une règle par défaut demanderait.",
-      never: "MulmoClaude ne le fera pas même si vous le demandez dans la discussion ; pour changer cela, modifiez la règle ici.",
+      allow: "MulmoClaude agit sans vous consulter, même là où une règle par défaut demanderait.",
+      requested:
+        "MulmoClaude agit quand vous l'avez demandé : dans la discussion, ou dans une skill ou une tâche planifiée que vous avez configurée. Sinon, il vous demande d'abord.",
+      ask: "Juste avant d'agir, MulmoClaude vous montre exactement ce qu'il va faire et attend votre accord, à chaque fois, même si vous l'avez demandé.",
+      handoff: "MulmoClaude ne le fait pas lui-même. Il prépare tout ce qu'il peut et vous indique ce qu'il vous reste à faire.",
     },
     editor: {
-      kindLabel: "Dans ce cas",
-      textLabel: "Ce que cela couvre",
+      kindLabel: "Comment MulmoClaude doit-il s'y prendre ?",
+      textLabel: "Décrivez l'action",
       placeholder: {
+        allow: "ex. : supprimer les anciens fichiers de artifacts/images",
+        requested: "ex. : ajouter ou déplacer des événements dans mon agenda",
         ask: "ex. : envoyer un e-mail ou un message en mon nom",
-        allow: "ex. : supprimer d'anciens fichiers dans artifacts/images",
-        never: "ex. : publier quoi que ce soit sur les réseaux sociaux",
+        handoff: "ex. : publier quoi que ce soit sur les réseaux sociaux",
       },
       save: "Enregistrer la règle",
     },
@@ -1209,6 +1215,7 @@ const frMessages = {
       sendOrPublish:
         "Envoyer ou publier quoi que ce soit hors de l'espace de travail : e-mails, messages, publications sur les réseaux, invitations, git push.",
       moneyOrCommitments: "Tout ce qui coûte de l'argent ou vous engage : achats, réservations, abonnements.",
+      signInOrPay: "Se connecter quelque part, ou saisir des mots de passe, des codes de vérification ou des données de carte bancaire.",
       changeSetup: "Modifier la configuration de MulmoClaude lui-même : paramètres, rôles, skills, planifications, cette personnalité et ces règles.",
       outsideWorkspace: "Installer des logiciels ou modifier quoi que ce soit hors de l'espace de travail.",
       exposeSecrets: "Révéler ou envoyer des mots de passe, clés d'API ou autres secrets.",
@@ -1217,7 +1224,7 @@ const frMessages = {
     plugins: {
       back: "Règles",
       description:
-        "Choisissez comment MulmoClaude peut utiliser chaque plugin. Jamais retire les outils du plugin de toutes les discussions ; Demander d'abord fait que MulmoClaude vous consulte avant de l'utiliser.",
+        "Choisissez comment MulmoClaude peut utiliser chaque plugin. Jamais retire les outils du plugin de toutes les discussions ; Demander d'abord fait que MulmoClaude l'utilise quand vous le demandez et vous consulte dans les autres cas.",
       builtInHeading: "Plugins MulmoClaude",
       mcpHeading: "Serveurs MCP",
       levels: {

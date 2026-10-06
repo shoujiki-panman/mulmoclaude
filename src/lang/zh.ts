@@ -578,7 +578,7 @@ const zhMessages = {
     },
     rules: {
       title: "规则",
-      summary: "助手何时自行行动、何时先确认、何时从不执行的规则，以及每个插件的权限。在 设置 → 规则 中编辑。",
+      summary: "助手何时直接执行、你吩咐过才执行、每次先确认、交给你本人的规则，以及每个插件的权限。在 设置 → 规则 中编辑。",
     },
     memory: {
       title: "记忆",
@@ -1147,27 +1147,32 @@ const zhMessages = {
     empty: "还没有规则。例如：发送任何邮件前先确认。",
     addRule: "添加规则",
     kinds: {
-      ask: "先确认",
-      allow: "无需确认",
-      never: "从不",
+      allow: "无需询问直接执行",
+      requested: "你吩咐过才执行",
+      ask: "执行前先确认",
+      handoff: "交给你本人",
     },
     kindHeadings: {
-      allow: "无需确认即可执行",
-      ask: "先征求你的同意",
-      never: "从不执行",
+      allow: "无需询问直接执行的事",
+      requested: "你吩咐过才执行的事",
+      ask: "每次执行前都先确认的事",
+      handoff: "交给你本人的事",
     },
+    safetyHeading: "从不执行的事（规则无法更改）",
     kindHints: {
-      ask: "MulmoClaude 会在执行前征求你的同意。",
-      allow: "即使默认规则要求确认，MulmoClaude 也会直接执行。",
-      never: "即使你在聊天中要求，MulmoClaude 也不会执行——如需更改，请在这里修改规则。",
+      allow: "即使默认规则会先询问，MulmoClaude 也会直接执行。",
+      requested: "你在聊天中吩咐过，或者你设置的技能、定时任务中包含这件事时，MulmoClaude 会直接执行；否则会先征求你的同意。",
+      ask: "即使是你要求的，MulmoClaude 每次也会在执行前告诉你具体要做什么，并等你同意。",
+      handoff: "MulmoClaude 不会亲自做这件事。它会把能准备的都准备好，再告诉你剩下需要你做的步骤。",
     },
     editor: {
-      kindLabel: "遇到这种情况时",
-      textLabel: "适用的行为",
+      kindLabel: "MulmoClaude 应如何处理？",
+      textLabel: "描述这个操作",
       placeholder: {
-        ask: "例如：代我发送邮件或聊天消息",
         allow: "例如：删除 artifacts/images 中的旧文件",
-        never: "例如：在社交媒体上发布任何内容",
+        requested: "例如：在我的日历中添加或移动日程",
+        ask: "例如：代我发送邮件或聊天消息",
+        handoff: "例如：在社交媒体上发布任何内容",
       },
       save: "保存规则",
     },
@@ -1183,6 +1188,7 @@ const zhMessages = {
       deleteOrOverwrite: "删除文件或数据，或大幅覆盖已有内容。",
       sendOrPublish: "向工作区之外发送或发布任何内容——邮件、聊天消息、社交媒体帖子、邀请、git push。",
       moneyOrCommitments: "任何花钱或让你承担约定的事——购买、预订、订阅。",
+      signInOrPay: "登录某个网站或服务，或输入密码、验证码、银行卡信息。",
       changeSetup: "更改 MulmoClaude 自身的配置——设置、角色、技能、日程、这份个性和这些规则。",
       outsideWorkspace: "安装软件，或更改工作区之外的任何内容。",
       exposeSecrets: "泄露或发送密码、API 密钥等机密信息。",
@@ -1190,7 +1196,8 @@ const zhMessages = {
     },
     plugins: {
       back: "规则",
-      description: "选择 MulmoClaude 可以如何使用每个插件。「从不」会把该插件的工具从所有对话中移除；「先确认」会让 MulmoClaude 在使用前先征求你的同意。",
+      description:
+        "选择 MulmoClaude 可以如何使用每个插件。「从不」会把该插件的工具从所有对话中移除；「先确认」会让 MulmoClaude 在你吩咐时使用它，其他情况下先征求你的同意。",
       builtInHeading: "MulmoClaude 插件",
       mcpHeading: "MCP 服务器",
       levels: {

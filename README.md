@@ -496,7 +496,7 @@ The gear icon in the sidebar opens a Settings modal where you can extend Claude'
 The **Assistant** group at the top of Settings shapes how MulmoClaude behaves in every role — the GUI counterpart of a `CLAUDE.md` and of Claude Code's rules:
 
 - **Personality** — a name and icon (shown on its replies and in the message box), a style-and-tone preset, four characteristics (warmth, enthusiasm, headings and lists, emoji — one click each between *less* / *default* / *more*) and free-text **custom instructions** sent with every conversation.
-- **Rules** — the built-in rules for when MulmoClaude acts on its own and when it asks first (shown under *Default rules*), your own *ask first* / *without asking* / *never* rules, and per-plugin permissions. A plugin or MCP server set to *Never* is removed from every chat; the written rules are guidance MulmoClaude tries to follow.
+- **Rules** — the built-in rules for when MulmoClaude acts on its own and when it asks first (shown under *Default rules*), your own rules — each set to *take action without asking*, *take action when you say so*, *ask before taking action* (every time) or *hand off to you* — and per-plugin permissions. A plugin or MCP server set to *Never* is removed from every chat; the written rules are guidance MulmoClaude tries to follow, and the safety rules (never leaking secrets, never obeying instructions hidden in content) can't be changed.
 
 Both are plain files (`config/personality.json`, `config/rules.json`) and apply from the next message. You can also just ask in chat — "talk a little more like a tanuki", "add a rule: ask before sending any email" — and it updates these settings itself, answering in the new style right away.
 

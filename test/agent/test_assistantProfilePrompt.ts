@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { askFirstPluginKeys, buildPersonalitySection, buildRulesSection } from "../../server/agent/assistantProfilePrompt.js";
 import { withoutBlockedMcpServers, withoutBlockedPlugins } from "../../server/agent/pluginPermissions.js";
 import { defaultPersonality, type Personality } from "../../src/types/personality.js";
-import { DEFAULT_RULES, emptyRules, type AssistantRules } from "../../src/types/assistantRules.js";
+import { DEFAULT_RULES, SAFETY_RULES, emptyRules, type AssistantRules } from "../../src/types/assistantRules.js";
 import type { Role } from "../../src/config/roles.js";
 
 function personalityWith(overrides: Partial<Personality>): Personality {
@@ -62,6 +62,22 @@ describe("buildRulesSection", () => {
     assert.doesNotMatch(section, /### Plugin permissions/);
   });
 
+  it("explains the four modes, with a schedule the user set up counting as their say-so", () => {
+    const section = buildRulesSection(emptyRules(), noTools);
+    for (const mode of ["Take action without asking:", "Take action when the user says so:", "Ask before taking action:", "Hand off to the user:"]) {
+      assert.ok(section.includes(`- ${mode}`), `mode ${mode}`);
+    }
+    assert.match(section, /in a skill, schedule or automation they set up/);
+    assert.match(section, /every time, even when the user asked for it/);
+  });
+
+  it("keeps the safety rules in an Always block that nothing overrides", () => {
+    const section = buildRulesSection(emptyRules(), noTools);
+    const always = section.slice(section.indexOf("### Always"));
+    for (const rule of SAFETY_RULES) assert.ok(always.includes(`- ${rule.prompt}`), `missing safety rule ${rule.id}`);
+    assert.match(section, /Nothing overrides the rules under Always/);
+  });
+
   it("points chat-driven changes at the manageAssistant tool", () => {
     const section = buildRulesSection(emptyRules(), noTools);
     assert.ok(section.includes("`config/rules.json`"));
@@ -69,31 +85,37 @@ describe("buildRulesSection", () => {
     assert.ok(section.includes("`mcp__mulmoclaude__manageAssistant`"));
   });
 
-  it("lists enabled user rules by kind and leaves disabled ones out", () => {
+  it("lists enabled user rules under their mode and leaves disabled ones out", () => {
     const rules: AssistantRules = {
       rules: [
         { id: "a", kind: "ask", text: "Booking a restaurant", enabled: true },
-        { id: "b", kind: "never", text: "Posting to X", enabled: true },
+        { id: "b", kind: "handoff", text: "Posting to X", enabled: true },
         { id: "c", kind: "allow", text: "Tidying artifacts/", enabled: true },
-        { id: "d", kind: "ask", text: "Switched off rule", enabled: false },
+        { id: "d", kind: "requested", text: "Pushing to my repos", enabled: true },
+        { id: "e", kind: "ask", text: "Switched off rule", enabled: false },
       ],
       plugins: {},
     };
     const section = buildRulesSection(rules, noTools);
     const userBlock = section.slice(section.indexOf("### The user's rules"));
-    assert.ok(userBlock.includes("Ask first:\n- Booking a restaurant"));
-    assert.ok(userBlock.includes("Go ahead without asking:\n- Tidying artifacts/"));
-    assert.match(userBlock, /Never — not even when asked in chat[^\n]*\n- Posting to X/);
+    assert.ok(userBlock.includes("Take action without asking:\n- Tidying artifacts/"));
+    assert.ok(userBlock.includes("Take action when the user says so (otherwise ask first):\n- Pushing to my repos"));
+    assert.ok(userBlock.includes("Ask before taking action, every time:\n- Booking a restaurant"));
+    assert.ok(userBlock.includes("Hand off to the user:\n- Posting to X"));
     assert.ok(!section.includes("Switched off rule"));
-    // Kind order: allow, then ask, then never.
-    assert.ok(userBlock.indexOf("Tidying") < userBlock.indexOf("Booking"));
-    assert.ok(userBlock.indexOf("Booking") < userBlock.indexOf("Posting"));
+    // Mode order: most autonomous first.
+    const positions = ["Tidying", "Pushing", "Booking", "Posting"].map((text) => userBlock.indexOf(text));
+    assert.deepEqual(
+      [...positions].sort((left, right) => left - right),
+      positions,
+    );
   });
 
   it("names ask-first plugins by their callable tool id", () => {
     const rules: AssistantRules = { rules: [], plugins: { generateImage: "ask", mcp__github: "ask", presentChart: "never" } };
     const section = buildRulesSection(rules, new Set(["generateImage", "presentChart"]));
     assert.match(section, /### Plugin permissions/);
+    assert.match(section, /only when the user asked for what they do; otherwise ask first/);
     assert.ok(section.includes("`mcp__mulmoclaude__generateImage`"));
     assert.ok(section.includes("any tool of the `github` MCP server (`mcp__github__*`)"));
     assert.ok(!section.includes("presentChart"));

@@ -602,7 +602,8 @@ const esMessages = {
     },
     rules: {
       title: "Reglas",
-      summary: "Tus reglas sobre cuándo el asistente actúa solo, pregunta antes o nunca actúa, más los permisos por plugin. Se editan en Ajustes → Reglas.",
+      summary:
+        "Tus reglas sobre cuándo el asistente actúa solo, actúa cuando se lo pides, pregunta antes cada vez o te lo deja a ti, más los permisos por plugin. Se editan en Ajustes → Reglas.",
     },
     memory: {
       title: "Memoria",
@@ -1180,27 +1181,33 @@ const esMessages = {
     empty: "Aún no hay reglas. Por ejemplo: preguntar antes de enviar cualquier correo.",
     addRule: "Añadir regla",
     kinds: {
-      ask: "Preguntar antes",
-      allow: "Sin preguntar",
-      never: "Nunca",
+      allow: "Actuar sin preguntar",
+      requested: "Actuar cuando lo pidas",
+      ask: "Preguntar antes de actuar",
+      handoff: "Dejártelo a ti",
     },
     kindHeadings: {
-      allow: "Hace sin preguntar",
-      ask: "Te pregunta antes",
-      never: "Nunca hace",
+      allow: "Actúa sin preguntar",
+      requested: "Actúa cuando se lo has pedido",
+      ask: "Pregunta antes de actuar, cada vez",
+      handoff: "Te lo deja a ti",
     },
+    safetyHeading: "Nunca hace — tus reglas no pueden cambiarlo",
     kindHints: {
-      ask: "MulmoClaude te pedirá aprobación antes de hacerlo.",
-      allow: "MulmoClaude lo hará sin preguntar, aunque una regla predeterminada pediría confirmación.",
-      never: "MulmoClaude no lo hará aunque se lo pidas en el chat; para cambiarlo, edita la regla aquí.",
+      allow: "MulmoClaude sigue adelante sin consultarte, incluso donde una regla predeterminada preguntaría.",
+      requested:
+        "MulmoClaude sigue adelante cuando se lo has pedido: en el chat o en una skill o tarea programada que configuraste. Si no, te pregunta primero.",
+      ask: "Justo antes de actuar, MulmoClaude te muestra exactamente qué va a hacer y espera tu visto bueno, cada vez, aunque se lo hayas pedido.",
+      handoff: "MulmoClaude no lo hace por sí mismo. Prepara todo lo que puede y te dice qué te queda por hacer.",
     },
     editor: {
-      kindLabel: "Cuando ocurra esto",
-      textLabel: "Qué cubre",
+      kindLabel: "¿Cómo debe manejarlo MulmoClaude?",
+      textLabel: "Describe la acción",
       placeholder: {
-        ask: "p. ej., enviar un correo o un mensaje de chat en mi nombre",
         allow: "p. ej., borrar archivos antiguos en artifacts/images",
-        never: "p. ej., publicar cualquier cosa en redes sociales",
+        requested: "p. ej., añadir o mover eventos en mi calendario",
+        ask: "p. ej., enviar un correo o un mensaje de chat en mi nombre",
+        handoff: "p. ej., publicar cualquier cosa en redes sociales",
       },
       save: "Guardar regla",
     },
@@ -1216,6 +1223,7 @@ const esMessages = {
       deleteOrOverwrite: "Borrar archivos o datos, o sobrescribir gran parte del contenido existente.",
       sendOrPublish: "Enviar o publicar algo fuera del espacio de trabajo: correos, mensajes de chat, publicaciones en redes, invitaciones, git push.",
       moneyOrCommitments: "Cualquier cosa que cueste dinero o te comprometa: compras, reservas, suscripciones.",
+      signInOrPay: "Iniciar sesión en algún sitio o escribir contraseñas, códigos de verificación o datos de tarjeta.",
       changeSetup: "Cambiar la configuración de MulmoClaude: ajustes, roles, skills, programaciones, esta personalidad y estas reglas.",
       outsideWorkspace: "Instalar software o cambiar algo fuera del espacio de trabajo.",
       exposeSecrets: "Revelar o enviar contraseñas, claves de API u otros secretos.",
@@ -1224,7 +1232,7 @@ const esMessages = {
     plugins: {
       back: "Reglas",
       description:
-        "Elige cómo puede usar MulmoClaude cada plugin. Nunca quita las herramientas del plugin de todos los chats; Preguntar antes hace que MulmoClaude te consulte antes de usarlo.",
+        "Elige cómo puede usar MulmoClaude cada plugin. Nunca quita las herramientas del plugin de todos los chats; Preguntar antes hace que MulmoClaude lo use cuando se lo pidas y te consulte en los demás casos.",
       builtInHeading: "Plugins de MulmoClaude",
       mcpHeading: "Servidores MCP",
       levels: {

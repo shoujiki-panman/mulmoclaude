@@ -176,14 +176,18 @@ test.describe("Assistant name on chat replies", () => {
 });
 
 test.describe("Settings → Rules", () => {
-  test("shows the default rules on request", async ({ page }) => {
+  test("shows the default rules on request, grouped by mode", async ({ page }) => {
     await mockProfileApi(page);
     await page.goto("/chat");
     await openTab(page, "rules");
 
     await expect(page.locator('[data-testid="settings-rules-defaults"]')).toHaveCount(0);
     await page.locator('[data-testid="settings-rules-defaults-toggle"]').click();
-    await expect(page.locator('[data-testid="settings-rules-defaults"]')).toContainText("Delete files or data");
+    await expect(page.locator('[data-testid="settings-rules-defaults-allow"]')).toContainText("Takes action without asking");
+    await expect(page.locator('[data-testid="settings-rules-defaults-requested"]')).toContainText("Delete files or data");
+    await expect(page.locator('[data-testid="settings-rules-defaults-ask"]')).toContainText("costs money");
+    await expect(page.locator('[data-testid="settings-rules-defaults-handoff"]')).toContainText("Sign in somewhere");
+    await expect(page.locator('[data-testid="settings-rules-defaults-safety"]')).toContainText("your rules can't change these");
   });
 
   test("adds, edits, switches off and deletes a rule", async ({ page }) => {
@@ -193,20 +197,26 @@ test.describe("Settings → Rules", () => {
     await expect(page.locator('[data-testid="settings-rules-empty"]')).toBeVisible();
 
     await page.locator('[data-testid="settings-rules-add"]').click();
-    await page.locator('[data-testid="settings-rule-editor-kind-never"]').click();
+    // A new rule starts on "Ask before taking action"; each mode explains itself.
+    await expect(page.locator('[data-testid="settings-rule-editor-kind-ask"] input')).toBeChecked();
+    await expect(page.locator('[data-testid="settings-rule-editor-kind-handoff"]')).toContainText("tells you what's left for you to do");
+    await page.locator('[data-testid="settings-rule-editor-kind-handoff"]').click();
     await page.locator('[data-testid="settings-rule-editor-text"]').fill("Posting anything to social media");
     await page.locator('[data-testid="settings-rule-editor-save"]').click();
     await expect.poll(() => state.rules.rules.length).toBe(1);
     const [added] = state.rules.rules;
-    expect(added).toMatchObject({ kind: "never", text: "Posting anything to social media", enabled: true });
+    expect(added).toMatchObject({ kind: "handoff", text: "Posting anything to social media", enabled: true });
     const ruleId = added?.id ?? "";
     await expect(page.locator(`[data-testid="settings-rule-${ruleId}"]`)).toContainText("Posting anything to social media");
+    await expect(page.locator(`[data-testid="settings-rule-kind-${ruleId}"]`)).toHaveText("Hand off to you");
 
     await page.locator(`[data-testid="settings-rule-edit-${ruleId}"]`).click();
-    await page.locator('[data-testid="settings-rule-editor-kind-ask"]').click();
+    await expect(page.locator('[data-testid="settings-rule-editor-kind-handoff"] input')).toBeChecked();
+    await page.locator('[data-testid="settings-rule-editor-kind-requested"]').click();
     await page.locator('[data-testid="settings-rule-editor-text"]').fill("Posting to social media");
     await page.locator('[data-testid="settings-rule-editor-save"]').click();
-    await expect.poll(() => state.rules.rules[0]?.kind).toBe("ask");
+    await expect.poll(() => state.rules.rules[0]?.kind).toBe("requested");
+    await expect(page.locator(`[data-testid="settings-rule-kind-${ruleId}"]`)).toHaveText("Take action when you say so");
     expect(state.rules.rules[0]?.text).toBe("Posting to social media");
 
     await page.locator(`[data-testid="settings-rule-toggle-${ruleId}"]`).click();
@@ -242,7 +252,7 @@ test.describe("Settings → Rules", () => {
     await expect(page.locator('[data-testid="settings-rule-r1"]')).toBeVisible();
 
     // Meanwhile the agent adds a rule because the user asked in chat.
-    state.rules = { ...state.rules, rules: [...state.rules.rules, { id: "r2", kind: "never", text: "Posting on social media", enabled: true }] };
+    state.rules = { ...state.rules, rules: [...state.rules.rules, { id: "r2", kind: "handoff", text: "Posting on social media", enabled: true }] };
 
     await page.locator('[data-testid="settings-rule-toggle-r1"]').click();
     await expect.poll(() => state.rules.rules.map((rule) => `${rule.id}:${String(rule.enabled)}`)).toEqual(["r1:false", "r2:true"]);

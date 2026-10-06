@@ -431,7 +431,8 @@ describe("buildSystemPrompt", () => {
       memorySnapshot: EMPTY_ATOMIC_SNAPSHOT,
       rules: { rules: [], plugins: { openCanvas: "ask", presentChart: "ask" } },
     });
-    assert.ok(result.includes("Ask first before calling: `mcp__mulmoclaude__openCanvas`."));
+    assert.ok(result.includes("only when the user asked for what they do; otherwise ask first: `mcp__mulmoclaude__openCanvas`."));
+    assert.ok(!result.includes("mcp__mulmoclaude__presentChart"));
   });
 });
 

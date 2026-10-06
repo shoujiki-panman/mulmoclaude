@@ -118,12 +118,12 @@ describe("rules route", () => {
 
   it("PUT stores the normalised value and GET reads it back", async () => {
     const body = {
-      rules: [{ id: "r1", kind: "never", text: "Post on social media", enabled: true }],
+      rules: [{ id: "r1", kind: "handoff", text: "Post on social media", enabled: true }],
       plugins: { generateImage: "ask", presentForm: "allow" },
     };
     const saved = await call(RULES, "put", body);
     assert.equal(saved.status, 200);
-    const expected = { rules: [{ id: "r1", kind: "never", text: "Post on social media", enabled: true }], plugins: { generateImage: "ask" } };
+    const expected = { rules: [{ id: "r1", kind: "handoff", text: "Post on social media", enabled: true }], plugins: { generateImage: "ask" } };
     assert.deepEqual(saved.body, expected);
     assert.deepEqual((await call(RULES, "get")).body, expected);
   });
