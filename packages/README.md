@@ -78,6 +78,7 @@ Four platforms deliver messages via **inbound HTTP webhooks** — [LINE](./bridg
 | [@mulmobridge/xmpp](./bridges/xmpp/) | XMPP / Jabber (any server) | XMPP over TLS (outbound) | **No** | [![npm](https://img.shields.io/npm/v/@mulmobridge/xmpp)](https://www.npmjs.com/package/@mulmobridge/xmpp) |
 | [@mulmobridge/rocketchat](./bridges/rocketchat/) | Rocket.Chat (DMs) | Long polling (outbound HTTP) | **No** | [![npm](https://img.shields.io/npm/v/@mulmobridge/rocketchat)](https://www.npmjs.com/package/@mulmobridge/rocketchat) |
 | [@mulmobridge/signal](./bridges/signal/) | Signal (via signal-cli-rest-api) | WebSocket + REST to local daemon | **No** (daemon local) | [![npm](https://img.shields.io/npm/v/@mulmobridge/signal)](https://www.npmjs.com/package/@mulmobridge/signal) |
+| [@mulmobridge/muse](./bridges/muse/) | Meta Muse via a Muse Gadget (Linux SDK) — experimental | Muse runs `mulmobridge-muse ask` on the gadget | **No** | — (not yet published) |
 | [@mulmobridge/teams](./bridges/teams/) | Microsoft Teams (Bot Framework) | Inbound HTTP webhook | **Yes** | [![npm](https://img.shields.io/npm/v/@mulmobridge/teams)](https://www.npmjs.com/package/@mulmobridge/teams) |
 | [@mulmobridge/webhook](./bridges/webhook/) | Generic HTTP webhook (developer glue) | Inbound JSON POST | No (localhost) | [![npm](https://img.shields.io/npm/v/@mulmobridge/webhook)](https://www.npmjs.com/package/@mulmobridge/webhook) |
 | [@mulmobridge/twilio-sms](./bridges/twilio-sms/) | SMS via Twilio | Inbound HTTP webhook | **Yes** | [![npm](https://img.shields.io/npm/v/@mulmobridge/twilio-sms)](https://www.npmjs.com/package/@mulmobridge/twilio-sms) |
@@ -194,6 +195,7 @@ packages/
     xmpp/         ← XMPP / Jabber bridge (TLS)
     rocketchat/   ← Rocket.Chat bridge (REST polling)
     signal/       ← Signal bridge (via signal-cli-rest-api)
+    muse/         ← Meta Muse bridge (Muse Gadget, Linux SDK)
     teams/        ← Microsoft Teams bridge (Bot Framework)
     webhook/      ← Generic HTTP webhook (developer glue)
     twilio-sms/   ← SMS via Twilio

@@ -1,0 +1,61 @@
+{
+  "name": "@mulmobridge/muse",
+  "version": "0.1.0",
+  "description": "Muse Gadgets bridge for MulmoBridge — let Meta's Muse ask your MulmoClaude through a Linux gadget",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "mulmobridge-muse": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SKILL.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepack": "yarn build",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/test_*.ts",
+    "lint": "eslint src test"
+  },
+  "license": "MIT",
+  "author": "Receptron Team",
+  "dependencies": {
+    "@mulmobridge/client": "^1.0.2",
+    "@mulmobridge/protocol": "^1.0.1",
+    "dotenv": "^17.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "typescript": "^6.0.3"
+  },
+  "homepage": "https://github.com/receptron/mulmoclaude/tree/main/packages/bridges/muse#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/receptron/mulmoclaude.git",
+    "directory": "packages/bridges/muse"
+  },
+  "keywords": [
+    "muse",
+    "muse-gadgets",
+    "meta",
+    "smart-glasses",
+    "mulmobridge",
+    "bridge",
+    "ai-agent",
+    "mulmoclaude"
+  ],
+  "bugs": {
+    "url": "https://github.com/receptron/mulmoclaude/issues"
+  }
+}
