@@ -72,4 +72,10 @@ export const PRESET_PLUGINS: readonly PresetPlugin[] = [
   // real IMAP/SMTP wiring lands in follow-up PRs. devOnly until
   // the surface stabilises + we decide on npm publish.
   { packageName: "@mulmoclaude/email-plugin", devOnly: true },
+  // OpenAI Decisions API (public beta) — `decide` judges a batch of
+  // texts / images against predicate / choice / score questions and
+  // renders the answers as a table. Needs OPENAI_API_KEY; without it
+  // the tool answers with setup instructions. devOnly until the
+  // plugin is published (plans/feat-decisions-plugin.md).
+  { packageName: "@mulmoclaude/decisions-plugin", devOnly: true },
 ];

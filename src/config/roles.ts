@@ -71,6 +71,9 @@ export const ROLES: [Role, ...Role[]] = [
       TOOL_NAMES.presentHtml,
       TOOL_NAMES.readXPost,
       TOOL_NAMES.searchX,
+      // Dev-only preset runtime plugin (OpenAI Decisions API). A no-op
+      // where the package isn't installed — see server/plugins/preset-list.ts.
+      TOOL_NAMES.decide,
     ],
     queries: [
       "Tell me about this app, MulmoClaude.",

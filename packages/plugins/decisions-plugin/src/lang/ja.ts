@@ -1,0 +1,16 @@
+export default {
+  title: "判定結果",
+  previewLabel: "判定",
+  itemsLabel: "件",
+  questionsLabel: "問",
+  failedLabel: "件失敗",
+  itemColumn: "項目",
+  imageLabel: "画像",
+  details: "内訳",
+  yes: "はい",
+  score: "スコア",
+  confidence: "確信度",
+  noDistribution: "この回答には確率の内訳が返されませんでした。",
+  error: "エラー",
+  empty: "結果がありません。",
+};

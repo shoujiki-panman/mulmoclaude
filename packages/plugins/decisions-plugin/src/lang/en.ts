@@ -1,0 +1,16 @@
+export default {
+  title: "Decisions",
+  previewLabel: "Decisions",
+  itemsLabel: "items",
+  questionsLabel: "questions",
+  failedLabel: "failed",
+  itemColumn: "Item",
+  imageLabel: "Image",
+  details: "Details",
+  yes: "Yes",
+  score: "Score",
+  confidence: "Confidence",
+  noDistribution: "The API returned no probabilities for this answer.",
+  error: "Error",
+  empty: "No results.",
+};
